@@ -1,9 +1,7 @@
-#setwd("C:/Users/chris/OneDrive/Desktop/GeoHealth/")
 library(tidyverse)
 library(stringr)
 library(sf)
 library(readxl)
-#source("C:/Users/chris/OneDrive/Desktop/GeoHealth/scripts/pullACS/pullACS.R")
 library(tigris)
 library(censusxy)
 
