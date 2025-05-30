@@ -62,19 +62,17 @@ prepTransportation<-function(year=2023,geography="county",
   
   #roll up
   ntd$geoid<-ntd[,geography]
-  ntd<-ntd[!is.na(ntd$uace),c("uace","geoid",
-              "ALAND10",#"uza_name",
+  ntd<-ntd[!is.na(ntd$uace),c("geoid",
               "agency_voms",
-              #"mode_voms",
               "total_facilities","per_facilities_prior1980","per_facilities_prior2000",
               "bin_bus","bin_demandresponse","bin_light_commuterail","bin_ferry","bin_directly_operated","bin_purchased_transportation",
               "fare_revenues_earned","total_operating_expenses",
               "cost_per_hour",
-              #"train_miles","train_hours",
               "passengers_per_hour"
-              #,"passenger_miles"
               )]
-  
+  ntd<-ntd%>%
+    group_by(geoid)%>%
+    summarise_each(funs=c("sum"))
   ntd<-ntd[!duplicated(ntd),]
   
   fars$geoid<-fars[,geography]
