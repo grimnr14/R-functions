@@ -124,3 +124,4 @@ testing<-F
 if(testing==T){
   ex<-prepTransportation(year=2022,geography="zcta")
 }
+
