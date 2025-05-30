@@ -51,14 +51,13 @@ prepTransportation<-function(year=2023,geography="county",
 
   fars<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/fars_shapes_",year,".csv"),header=T)
   fars$GEOID<-str_pad(fars$GEOID,width=15,side="left",pad=0)
-  gc()
   fars$tract<-substr(as.character(fars$GEOID),1,11)
-  gc()
   fars$county<-paste0(str_pad(as.character(trimws(fars$STATE)),width=2,side="left",pad="0"),
                       str_pad(as.character(trimws(fars$COUNTY)),width=3,side="left",pad="0"))
 #  fars$geometry<-st_as_sf(as.data.frame(matrix(c(fars$LONGITUD,fars$LATITUDE),ncol=2)),coords=c("V1","V2"))
   fars<-merge(map2,fars,by.x="GEOID_TRACT_20",by.y="tract",all.x=T)
   fars<-fars[!duplicated(fars),]
+  fars$tract<-fars$GEOID_TRACT_20
   fars$zcta<-fars$GEOID_ZCTA5_20
   
   #roll up
