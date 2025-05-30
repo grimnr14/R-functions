@@ -74,7 +74,9 @@ prepTransportation<-function(year=2023,geography="county",
   ex<-ex%>%
     group_by(geoid)%>%
     summarise_each(funs=c("max"))
-  ntd<-ntd[,!names(ntd) %in% c("per_facilities_prior1980","per_facilities_prior2000")]%>%
+  ntd<-ntd[,!names(ntd) %in% c("per_facilities_prior1980","per_facilities_prior2000")]
+  ntd<-ntd[!duplicated(ntd)&!is.na(ntd$geoid),]#exclude entries that are exact duplicates
+  ntd<-ntd%>%
     group_by(geoid)%>%
     summarise_each(funs=c("sum"))
   ntd<-merge(ntd,ex,by="geoid")
