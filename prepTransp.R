@@ -32,8 +32,7 @@ geo_locate<-function(obj,id=NULL,dims=2,benchmark="Public_AR_Current",vintage="C
   outs
 }
 
-
-prepTransportation(year=2023,geography="county",
+prepTransportation<-function(year=2023,geography="county",
                    uace="https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_uace_bg_fips_2022.csv",
                    zcta="https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_tract_fips_2020.txt"){
   map1<-read.csv(uace,header=T)
