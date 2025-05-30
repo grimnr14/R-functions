@@ -71,6 +71,9 @@ prepTransportation<-function(year=2023,geography="county",
               "passengers_per_hour"
               )]
   ex<-ntd[,c("geoid","per_facilities_prior1980","per_facilities_prior2000")]
+  ex<-ex%>%
+    group_by(geoid)%>%
+    summarise_each(funs=c("max"))
   ntd<-ntd[,!names(ntd) %in% c("per_facilities_prior1980","per_facilities_prior2000")]%>%
     group_by(geoid)%>%
     summarise_each(funs=c("sum"))
