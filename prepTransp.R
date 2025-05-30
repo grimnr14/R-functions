@@ -70,9 +70,11 @@ prepTransportation<-function(year=2023,geography="county",
               "cost_per_hour",
               "passengers_per_hour"
               )]
-  ntd<-ntd%>%
+  ex<-ntd[,c("geoid","per_facilities_prior1980","per_facilities_prior2000")]
+  ntd<-ntd[,!names(ntd) %in% c("per_facilities_prior1980","per_facilities_prior2000")]%>%
     group_by(geoid)%>%
     summarise_each(funs=c("sum"))
+  ntd<-merge(ntd,ex,by="geoid")
   ntd<-ntd[!duplicated(ntd),]
   
   fars$geoid<-fars[,geography]
