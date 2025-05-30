@@ -38,19 +38,22 @@ prepTransportation<-function(year=2023,geography="county",
   ntd<-ntd[!is.na(ntd$UACE10)&!duplicated(ntd),]
   ntd$GEOID<-str_pad(ntd$GEOID10,width=5,"left",pad="0")
   ntd<-merge(map1[,c("geoid","uace")],ntd,by.x="uace",by.y="GEOID",all.y=T)
-  ntd$county<-substr(as.character(ntd$geoid),1,5)
-  ntd$tract<-substr(as.character(ntd$geoid),1,11)
+  ntd$county<-ifelse(!is.na(ntd$geoid),substr(as.character(ntd$geoid),1,5),NA)
+  ntd$tract<-ifelse(!is.na(ntd$geoid),substr(as.character(ntd$geoid),1,11),NA)
   
   map2<-read.table(zcta,sep="|",header=T)[,c(2,10)]
   map2$GEOID_TRACT_20<-str_pad(as.character(map2$GEOID_TRACT_20),width=11,side="left",pad=0)
   map2$GEOID_ZCTA5_20<-str_pad(as.character(map2$GEOID_ZCTA5_20),width=5,side="left",pad=0)
   ntd<-merge(map2,ntd,by.x="GEOID_TRACT_20",by.y="tract",all.x=T)
+  ntd$tract<-ntd$GEOID_TRACT_20
   ntd$zcta<-ntd$GEOID_ZCTA5_20
   ntd<-ntd[!duplicated(ntd)&!is.na(ntd$uace),]
 
   fars<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/fars_shapes_",year,".csv"),header=T)
   fars$GEOID<-str_pad(fars$GEOID,width=15,side="left",pad=0)
+  gc()
   fars$tract<-substr(as.character(fars$GEOID),1,11)
+  gc()
   fars$county<-paste0(str_pad(as.character(trimws(fars$STATE)),width=2,side="left",pad="0"),
                       str_pad(as.character(trimws(fars$COUNTY)),width=3,side="left",pad="0"))
 #  fars$geometry<-st_as_sf(as.data.frame(matrix(c(fars$LONGITUD,fars$LATITUDE),ncol=2)),coords=c("V1","V2"))
@@ -120,6 +123,6 @@ prepTransportation<-function(year=2023,geography="county",
 
 testing<-F
 if(testing==T){
-  ex<-prepTransportation(year=2022,geography="zcta")
+  ex<-prepTransportation(year=2022,geography="tract")
 }
 
