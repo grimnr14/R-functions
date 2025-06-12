@@ -53,7 +53,7 @@ prepFood<-function(year=2019,geography="county",
   }
 #  fara<-merge(fara,pop,by.x="CensusTract",by.y="GEOID",all.x=T)#we can use current year pop assuming static rate to calc estimated counts of residents by year
   
-  vars<-c("CensusTract",
+  vars<-c("CensusTract","POP2010",
           "lapophalf","lakidshalf","laseniorshalf","lasnaphalf",
           "lapop1","lakids1","laseniors1","lasnap1",
           "lapop10","lakids10","laseniors10","lasnap10",
