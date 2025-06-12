@@ -53,43 +53,19 @@ prepFood<-function(year=2019,geography="county",
   }
   fara<-merge(fara,pop,by.x="CensusTract",by.y="GEOID",all.x=T)#we can use current year pop assuming static rate to calc estimated counts of residents by year
   
-  fara$lapophalfshare<-100*(fara$lapophalf/fara$POP2010)
-  fara$lakidshalfshare<-100*(fara$lakidshalf/fara$lapophalf)
-  fara$laseniorshalfshare<-100*(fara$laseniorshalf/fara$lapophalf)
-  fara$lasnaphalfshare<-100*(fara$lasnaphalf/fara$lapophalf)
-  fara$lapop1share<-100*(fara$lapop1/fara$POP2010)
-  fara$lakids1share<-100*(fara$lakids1/fara$lapop1)
-  fara$laseniors1share<-100*(fara$laseniors1/fara$lapop1)
-  fara$lasnap1share<-100*(fara$lasnap1/fara$lapop1)
-  fara$lapop10share<-100*(fara$lapop10/fara$POP2010)
-  fara$lakids10share<-100*(fara$lakids10/fara$lapop10)
-  fara$laseniors10share<-100*(fara$laseniors10/fara$lapop10)
-  fara$lasnap10share<-100*(fara$lasnap10/fara$lapop10)
-  
-  fara$lapophalf<-(fara$lapophalfshare/100)*fara$B01001_001#we can estimate annually assuming static rate
-  fara$lakidshalf<-(fara$lakidshalfshare/100)*fara$lapophalf
-  fara$laseniorshalf<-(fara$laseniorshalfshare/100)*fara$lapophalf
-  fara$lasnaphalf<-(fara$lasnaphalfshare/100)*fara$lapophalf
-  fara$lapop1<-(fara$lapop1share/100)*fara$B01001_001#we can estimate annually assuming static rate
-  fara$lakids1<-(fara$lakids1share/100)*fara$lapop1
-  fara$laseniors1<-(fara$laseniors1share/100)*fara$lapop1
-  fara$lasnap1<-(fara$lasnap1share/100)*fara$lapop1
-  fara$lapop10<-(fara$lapop10share/100)*fara$B01001_001#we can estimate annually assuming static rate
-  fara$lakids10<-(fara$lakids10share/100)*fara$lapop10
-  fara$laseniors10<-(fara$laseniors10share/100)*fara$lapop10
-  fara$lasnap10<-(fara$lasnap10share/100)*fara$lapop10
   vars<-c("CensusTract","B01001_001",
+          "lapophalf","lakidshalf","laseniorshalf","lasnaphalf",
+          "lapop1","lakids1","laseniors1","lasnap1",
+          "lapop10","lakids10","laseniors10","lasnap10",
           "lapophalfshare","lakidshalfshare","laseniorshalfshare","lasnaphalfshare",
           "lapop1share","lakids1share","laseniors1share","lasnap1share",
           "lapop10share","lakids10share","laseniors10share","lasnap10share"
           )
   fara<-fara[,vars]
   for(i in 3:ncol(fara)){
-    fara[,i]<-ifelse(is.infinite(fara[,i])|is.na(fara[,i])|fara[,i]>100,NA,fara[,i])
-    fara[,i]<-ifelse(fara[,i]==0&!is.na(fara[,i]),NA,fara[,i])#eliminating 0 reflects 0 imputed values that didn't actually exist
+    fara[,i]<-ifelse(is.infinite(fara[,i])|is.na(fara[,i]),NA,fara[,i])
   }
-  food<-fara[,!names(fara) %in% c("B01001_001")]
-
+  fara<-fara[,!names(fara) %in% c("B01001_001")]
 
   fea<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FoodEnvironmentAtlas",fea.year,".csv"),header=T)
   rnk<-as.numeric(substr(names(fea),nchar(names(fea))-1,nchar(names(fea))))
@@ -127,30 +103,8 @@ prepFood<-function(year=2019,geography="county",
     fea<-merge(fea,pop[,!names(pop) %in% c("GEOID")],by.x="FIPS",by.y="county",all.x=T)
     fea$GEOID<-fea$tract
   }
-  #head((fea$GROCPTH*fea$yearPop)/1000)#testing
-  fea$GROC<-(fea$GROCPTH*fea$B01001_001)/1000#same rate, new denominator assumes equal dist of stores across geographies
-  fea$CONVS<-(fea$CONVSPTH*fea$B01001_001)/1000
-  fea$SUPERC<-(fea$SUPERCPTH*fea$B01001_001)/1000
-  fea$SNAPS<-(fea$SNAPSPTH*fea$B01001_001)/1000
-  fea$WICS<-(fea$WICSPTH*fea$B01001_001)/1000
-  fea$FFR<-(fea$FFRPTH*fea$B01001_001)/1000
-  fea$FSR<-(fea$FSRPTH*fea$B01001_001)/1000
   
-#  fea$GROCPTH<-(fea$GROC/fea$B01001_001)*1000#new rate of groc per 1000 residents
-#  fea$CONVSPTH<-(fea$CONVS/fea$B01001_001)*1000
-#  fea$SUPERCPTH<-(fea$SUPERC/fea$B01001_001)*1000
-#  fea$SNAPSPTH<-(fea$SNAPS/fea$B01001_001)*1000
-#  fea$WICSPTH<-(fea$WICS/fea$B01001_001)*1000
-#  fea$FFRPTH<-(fea$FFR/fea$B01001_001)*1000
-#  fea$FSRPTH<-(fea$FSR/fea$B01001_001)*1000
-  
-  fea$FOODBANKSper1k<-1000*(fea$FOODBANKS/fea$B01001_001)
-  fea$PCSNAPBEN<-(fea$PCSNAPBEN/100000)*fea$B01001_001#theoretical dollar spent per resident assuming funding levels are same
-  fea$PCWICREDEMP<-(fea$PCWICREDEMP/100000)*fea$B01001_001
-  fea<-fea[,c("GEOID","GROC","CONVS","SUPERC","SNAPS","WICS","FFR","FSR","FOODBANKSper1k",
-              "REDEMPSNAPS","REDEMPWICS","PCSNAPBEN","PCWICREDEMP","FOODINSEC","VLFOODSEC")]
-  
-  food<-merge(fea,food,by.x="GEOID",by.y="CensusTract",all=T)#note censustract is really the same level as geoid at this point
+  food<-merge(fea,fara,by.x="GEOID",by.y="CensusTract",all=T)#note censustract is really the same level as geoid at this point
   for(i in 2:ncol(food)){
     food[,i]<-ifelse(is.infinite(food[,i])|is.na(food[,i]),NA,food[,i])#removing missing denominator values
   }
