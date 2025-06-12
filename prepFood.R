@@ -26,7 +26,7 @@ prepFood<-function(year=2019,geography="county",
     map1$GEOID<-str_pad(as.character(map1$GEOID),width=11,side="left",pad="0")
     map1$ZCTA<-str_pad(as.character(map1$ZCTA),width=5,side="left",pad="0")
   }
-  pop<-pullACS(geography=geography,year=year,geometry=F)
+  #pop<-pullACS(geography=geography,year=year,geometry=F)
   fara<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FARA%20estimates%20",fara.year,".csv"),header=T)
   #read.csv("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FARA%20estimates%202019.csv",header=T)
   fara<-fara[fara$year==fara.year,]
@@ -51,7 +51,7 @@ prepFood<-function(year=2019,geography="county",
       group_by(CensusTract)%>%
       summarise_each(funs="sum")
   }
-  fara<-merge(fara,pop,by.x="CensusTract",by.y="GEOID",all.x=T)#we can use current year pop assuming static rate to calc estimated counts of residents by year
+#  fara<-merge(fara,pop,by.x="CensusTract",by.y="GEOID",all.x=T)#we can use current year pop assuming static rate to calc estimated counts of residents by year
   
   vars<-c("CensusTract","B01001_001",
           "lapophalf","lakidshalf","laseniorshalf","lasnaphalf",
@@ -79,8 +79,8 @@ prepFood<-function(year=2019,geography="county",
   #rates<-fea[,c("FIPS","State","County",names(fea)[str_detect(names(fea),"PTH")])]#assumes equal rate per geography
   #counts<-fea[,c("FIPS","State","County",names(fea)[str_detect(names(fea),"PTH")==F])]
   if(geography=="county"){
-    pop<-pullACS(geography="county",geometry=F,variables=c("B01001_001","B25001_001"),year=year)
-    fea<-merge(fea,pop,by.x="FIPS",by.y="GEOID",all.x=T)#note this geography never changes. FEA is at county only
+    #pop<-pullACS(geography="county",geometry=F,variables=c("B01001_001","B25001_001"),year=year)
+    #fea<-merge(fea,pop,by.x="FIPS",by.y="GEOID",all.x=T)#note this geography never changes. FEA is at county only
     fea$GEOID<-fea$FIPS
   }
   if(geography=="zcta"){
@@ -89,18 +89,18 @@ prepFood<-function(year=2019,geography="county",
     map2<-map2[!duplicated(map2)&!is.na(map2$ZCTA),]
     fea<-merge(fea,map2,by.x="FIPS",by.y="GEOID",all.x=T)
     if(year>=2020){
-      pop<-pullACS(geography="zcta",geometry=F,variables=c("B01001_001","B25001_001"),year=year)
+      #pop<-pullACS(geography="zcta",geometry=F,variables=c("B01001_001","B25001_001"),year=year)
     }else{
-      pop<-pullACS(geography="zip code tabulation area",variables=c("B01001_001","B25001_001"),year=year,geometry=F)
+      #pop<-pullACS(geography="zip code tabulation area",variables=c("B01001_001","B25001_001"),year=year,geometry=F)
     }
-    fea<-merge(fea,pop,by.x="ZCTA",by.y="GEOID",all.x=T)
+    #fea<-merge(fea,pop,by.x="ZCTA",by.y="GEOID",all.x=T)
     fea$GEOID<-fea$ZCTA
   }
   if(geography=="tract"){
-    pop<-pullACS(geography="tract",variables=c("B01001_001","B25001_001"),geometry=F,year=year)
-    pop$county<-substr(pop$GEOID,1,5)
-    pop$tract<-pop$GEOID
-    fea<-merge(fea,pop[,!names(pop) %in% c("GEOID")],by.x="FIPS",by.y="county",all.x=T)
+    #pop<-pullACS(geography="tract",variables=c("B01001_001","B25001_001"),geometry=F,year=year)
+    #pop$county<-substr(pop$GEOID,1,5)
+    #pop$tract<-pop$GEOID
+    #fea<-merge(fea,pop[,!names(pop) %in% c("GEOID")],by.x="FIPS",by.y="county",all.x=T)
     fea$GEOID<-fea$tract
   }
   
