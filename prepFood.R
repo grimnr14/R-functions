@@ -53,7 +53,7 @@ prepFood<-function(year=2019,geography="county",
   }
 #  fara<-merge(fara,pop,by.x="CensusTract",by.y="GEOID",all.x=T)#we can use current year pop assuming static rate to calc estimated counts of residents by year
   
-  vars<-c("CensusTract","B01001_001",
+  vars<-c("CensusTract",
           "lapophalf","lakidshalf","laseniorshalf","lasnaphalf",
           "lapop1","lakids1","laseniors1","lasnap1",
           "lapop10","lakids10","laseniors10","lasnap10",
@@ -65,7 +65,7 @@ prepFood<-function(year=2019,geography="county",
   for(i in 3:ncol(fara)){
     fara[,i]<-ifelse(is.infinite(fara[,i])|is.na(fara[,i]),NA,fara[,i])
   }
-  fara<-fara[,!names(fara) %in% c("B01001_001")]
+  #fara<-fara[,!names(fara) %in% c("B01001_001")]
 
   fea<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FoodEnvironmentAtlas",fea.year,".csv"),header=T)
   rnk<-as.numeric(substr(names(fea),nchar(names(fea))-1,nchar(names(fea))))
