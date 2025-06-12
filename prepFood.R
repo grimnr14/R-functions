@@ -62,10 +62,6 @@ prepFood<-function(year=2019,geography="county",
           "lapop10share","lakids10share","laseniors10share","lasnap10share"
           )
   fara<-fara[,vars]
-  for(i in 3:ncol(fara)){
-    fara[,i]<-ifelse(is.infinite(fara[,i])|is.na(fara[,i]),NA,fara[,i])
-  }
-  #fara<-fara[,!names(fara) %in% c("B01001_001")]
 
   fea<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FoodEnvironmentAtlas",fea.year,".csv"),header=T)
   rnk<-as.numeric(substr(names(fea),nchar(names(fea))-1,nchar(names(fea))))
@@ -76,11 +72,7 @@ prepFood<-function(year=2019,geography="county",
   fea$FIPS<-str_pad(as.character(fea$FIPS),width=5,side="left",pad="0")
   #the PTH features are all rates per 1,000 residents in corresponding year population from file
   fea$yearPop<-1000*fea$GROC/fea$GROCPTH
-  #rates<-fea[,c("FIPS","State","County",names(fea)[str_detect(names(fea),"PTH")])]#assumes equal rate per geography
-  #counts<-fea[,c("FIPS","State","County",names(fea)[str_detect(names(fea),"PTH")==F])]
   if(geography=="county"){
-    #pop<-pullACS(geography="county",geometry=F,variables=c("B01001_001","B25001_001"),year=year)
-    #fea<-merge(fea,pop,by.x="FIPS",by.y="GEOID",all.x=T)#note this geography never changes. FEA is at county only
     fea$GEOID<-fea$FIPS
   }
   if(geography=="zcta"){
@@ -88,27 +80,14 @@ prepFood<-function(year=2019,geography="county",
     map2$GEOID<-substr(map2$GEOID,1,5)
     map2<-map2[!duplicated(map2)&!is.na(map2$ZCTA),]
     fea<-merge(fea,map2,by.x="FIPS",by.y="GEOID",all.x=T)
-    if(year>=2020){
-      #pop<-pullACS(geography="zcta",geometry=F,variables=c("B01001_001","B25001_001"),year=year)
-    }else{
-      #pop<-pullACS(geography="zip code tabulation area",variables=c("B01001_001","B25001_001"),year=year,geometry=F)
-    }
-    #fea<-merge(fea,pop,by.x="ZCTA",by.y="GEOID",all.x=T)
     fea$GEOID<-fea$ZCTA
   }
   if(geography=="tract"){
-    #pop<-pullACS(geography="tract",variables=c("B01001_001","B25001_001"),geometry=F,year=year)
-    #pop$county<-substr(pop$GEOID,1,5)
-    #pop$tract<-pop$GEOID
-    #fea<-merge(fea,pop[,!names(pop) %in% c("GEOID")],by.x="FIPS",by.y="county",all.x=T)
     fea$GEOID<-fea$tract
   }
   
   food<-merge(fea,fara,by.x="GEOID",by.y="CensusTract",all=T)#note censustract is really the same level as geoid at this point
-  for(i in 2:ncol(food)){
-    food[,i]<-ifelse(is.infinite(food[,i])|is.na(food[,i]),NA,food[,i])#removing missing denominator values
-  }
-  
+
   food<-food[!duplicated(food),]
   food
 }
