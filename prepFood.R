@@ -83,6 +83,10 @@ prepFood<-function(year=2019,geography="county",
     fea$GEOID<-fea$ZCTA
   }
   if(geography=="tract"){
+    map2<-data.frame(tract=fara$CensusTract,county=rep(NA,nrow(fara)))
+    map2<-map2[!duplicated(map2),]
+    map2$county<-substr(map2$tract,1,5)
+    fea<-merge(fea,map2,by.x="FIPS",by.y="county",all.x=T)
     fea$GEOID<-fea$tract
   }
   
