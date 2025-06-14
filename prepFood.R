@@ -66,10 +66,11 @@ prepFood<-function(year=2019,geography="county",
   fea<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FoodEnvironmentAtlas",fea.year,".csv"),header=T)
   rnk<-as.numeric(substr(names(fea),nchar(names(fea))-1,nchar(names(fea))))
   rnk<-ordered(rnk)
-  rnk<-levels(rnk)[(length(levels(rnk))-3):length(levels(rnk))]
-  fea<-fea[,c("FIPS","State","County",names(fea)[str_detect(names(fea),rnk[1])|str_detect(names(fea),rnk[2])|str_detect(names(fea),rnk[3])])]
+  rnk<-levels(rnk)[(length(levels(rnk))-2):length(levels(rnk))]
+  fea<-fea[,c("FIPS","State","County",names(fea)[substr(names(fea),nchar(names(fea))-1,nchar(names(fea))) %in% rnk])]
   names(fea)<-gsub("[0-9_]","",names(fea))
   fea$FIPS<-str_pad(as.character(fea$FIPS),width=5,side="left",pad="0")
+  fea<-fea[,!duplicated(names(fea))]
   #the PTH features are all rates per 1,000 residents in corresponding year population from file
   fea$yearPop<-1000*fea$GROC/fea$GROCPTH
   if(geography=="county"){
@@ -93,11 +94,11 @@ prepFood<-function(year=2019,geography="county",
   food<-merge(fea,fara,by.x="GEOID",by.y="CensusTract",all=T)#note censustract is really the same level as geoid at this point
 
   food<-food[!duplicated(food),]
-  food
+  food[,!names(food) %in% c("FIPS","State","County")]
 }
 
 testing<-F
 if(testing==T){
-  ex<-prepFood(year=2022,geography="tract")
+  ex<-prepFood(year=2020,geography="county")
 }
 
