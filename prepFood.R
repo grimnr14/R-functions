@@ -66,7 +66,7 @@ prepFood<-function(year=2019,geography="county",
   fea<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FoodEnvironmentAtlas",fea.year,".csv"),header=T)
   rnk<-as.numeric(substr(names(fea),nchar(names(fea))-1,nchar(names(fea))))
   rnk<-ordered(rnk)
-  rnk<-levels(rnk)[(length(levels(rnk))-2):length(levels(rnk))]
+  rnk<-levels(rnk)[(length(levels(rnk))-3):length(levels(rnk))]
   fea<-fea[,c("FIPS","State","County",names(fea)[str_detect(names(fea),rnk[1])|str_detect(names(fea),rnk[2])|str_detect(names(fea),rnk[3])])]
   names(fea)<-gsub("[0-9_]","",names(fea))
   fea$FIPS<-str_pad(as.character(fea$FIPS),width=5,side="left",pad="0")
