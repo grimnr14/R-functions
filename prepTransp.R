@@ -31,8 +31,24 @@ geo_locate<-function(obj,id=NULL,dims=2,benchmark="Public_AR_Current",vintage="C
 }
 
 prepTransportation<-function(year=2023,geography="county",
-                   uace="https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_uace_bg_fips_2022.csv",
-                   zcta="https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_tract_fips_2020.txt"){
+                   uace="https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_uace_bg_fips_2022.csv"#,
+                   ){
+  year.map<-ifelse(year>=2020,"2020","2010")
+  if(geography=="zcta"){
+    zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_bg_fips_",year.map,".csv")
+    #map1<-read.csv(zcta,header=T,sep="|")
+    map2<-read.csv(zcta,header=F,sep=",")
+    names(map2)<-c("GEOID","LAT","LONG","parse","ZCTA","NAME")
+    #map2$GEOID<-map2[,str_detect(names(map2),"GEOID_TRACT")]
+    #map2$ZCTA<-map2[,str_detect(names(map2),"GEOID_ZCTA5_")]
+    map2<-map2[,c("GEOID","ZCTA")]
+    map2<-map2[!duplicated(map2),]
+    map2$GEOID<-str_pad(as.character(map2$GEOID),width=12,side="left",pad="0")
+    map2$GEOID<-substr(map2$GEOID,1,11)
+    map2$ZCTA<-str_pad(as.character(map2$ZCTA),width=5,side="left",pad="0")
+    map2<-map2[!duplicated(map2),]
+  }
+  
   map1<-read.csv(uace,header=T)
   ntd<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/shape_ntd_",year,".csv"),header=T)
   ntd<-ntd[!is.na(ntd$UACE10)&!duplicated(ntd),]
@@ -41,12 +57,13 @@ prepTransportation<-function(year=2023,geography="county",
   ntd$county<-ifelse(!is.na(ntd$geoid),substr(as.character(ntd$geoid),1,5),NA)
   ntd$tract<-ifelse(!is.na(ntd$geoid),substr(as.character(ntd$geoid),1,11),NA)
   
-  map2<-read.table(zcta,sep="|",header=T)[,c(2,10)]
-  map2$GEOID_TRACT_20<-str_pad(as.character(map2$GEOID_TRACT_20),width=11,side="left",pad=0)
-  map2$GEOID_ZCTA5_20<-str_pad(as.character(map2$GEOID_ZCTA5_20),width=5,side="left",pad=0)
-  ntd<-merge(map2,ntd,by.x="GEOID_TRACT_20",by.y="tract",all.x=T)
-  ntd$tract<-ntd$GEOID_TRACT_20
-  ntd$zcta<-ntd$GEOID_ZCTA5_20
+  #map2<-read.table(zcta,sep="|",header=T)[,c(2,10)]
+  #map2$GEOID_TRACT_20<-str_pad(as.character(map2$GEOID_TRACT_20),width=11,side="left",pad=0)
+  #map2$GEOID_ZCTA5_20<-str_pad(as.character(map2$GEOID_ZCTA5_20),width=5,side="left",pad=0)
+  
+  ntd<-merge(map2,ntd,by.x="GEOID",by.y="tract",all.x=T)
+  ntd$tract<-ntd$GEOID
+  ntd$zcta<-ntd$ZCTA
   ntd<-ntd[!duplicated(ntd)&!is.na(ntd$uace),]
 
   fars<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/fars_shapes_",year,".csv"),header=T)
@@ -55,10 +72,10 @@ prepTransportation<-function(year=2023,geography="county",
   fars$county<-paste0(str_pad(as.character(trimws(fars$STATE)),width=2,side="left",pad="0"),
                       str_pad(as.character(trimws(fars$COUNTY)),width=3,side="left",pad="0"))
 #  fars$geometry<-st_as_sf(as.data.frame(matrix(c(fars$LONGITUD,fars$LATITUDE),ncol=2)),coords=c("V1","V2"))
-  fars<-merge(map2,fars,by.x="GEOID_TRACT_20",by.y="tract",all.x=T)
+  fars<-merge(map2,fars,by.x="GEOID",by.y="tract",all.x=T)
   fars<-fars[!duplicated(fars),]
-  fars$tract<-fars$GEOID_TRACT_20
-  fars$zcta<-fars$GEOID_ZCTA5_20
+  fars$tract<-fars$GEOID
+  fars$zcta<-fars$ZCTA
   
   #roll up
   ntd$geoid<-ntd[,geography]
@@ -127,6 +144,6 @@ prepTransportation<-function(year=2023,geography="county",
 
 testing<-F
 if(testing==T){
-  ex<-prepTransportation(year=2022,geography="tract")
+  ex<-prepTransportation(year=2022,geography="zcta")
 }
 

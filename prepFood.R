@@ -7,9 +7,10 @@ library(readxl)
 library(tigris)
 library(censusxy)
 
-prepFood<-function(year=2019,geography="county",
-                   zcta="https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_tract_fips_2020.txt",
-                   year.map=NULL){
+prepFood<-function(year=2019,geography="county"#,
+                   #zcta="https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_tract_fips_2020.txt",
+                   #year.map=2010
+                   ){
   fara.year<-ifelse(year>=2019,"2019",
                     ifelse(year>=2015,"2015","2010"))
   fea.year<-ifelse(year>=2019,"2019",
@@ -17,14 +18,20 @@ prepFood<-function(year=2019,geography="county",
                           ifelse(year>=2015,"2015",
                                  ifelse(year>=2014,"2015",
                                         ifelse(year>=2012,"2012","2011")))))
+  year.map<-ifelse(year>=2020,"2020","2010")
   if(geography=="zcta"){
-    map1<-read.csv(zcta,header=T,sep="|")
-    map1$GEOID<-map1[,str_detect(names(map1),"GEOID_TRACT")]
-    map1$ZCTA<-map1[,str_detect(names(map1),"GEOID_ZCTA5_")]
+    zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_bg_fips_",year.map,".csv")
+    #map1<-read.csv(zcta,header=T,sep="|")
+    map1<-read.csv(zcta,header=F,sep=",")
+    names(map1)<-c("GEOID","LAT","LONG","parse","ZCTA","NAME")
+    #map1$GEOID<-map1[,str_detect(names(map1),"GEOID_TRACT")]
+    #map1$ZCTA<-map1[,str_detect(names(map1),"GEOID_ZCTA5_")]
     map1<-map1[,c("GEOID","ZCTA")]
     map1<-map1[!duplicated(map1),]
-    map1$GEOID<-str_pad(as.character(map1$GEOID),width=11,side="left",pad="0")
+    map1$GEOID<-str_pad(as.character(map1$GEOID),width=12,side="left",pad="0")
+    map1$GEOID<-substr(map1$GEOID,1,11)
     map1$ZCTA<-str_pad(as.character(map1$ZCTA),width=5,side="left",pad="0")
+    map1<-map1[!duplicated(map1),]
   }
   #pop<-pullACS(geography=geography,year=year,geometry=F)
   fara<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FARA%20estimates%20",fara.year,".csv"),header=T)
@@ -100,5 +107,6 @@ prepFood<-function(year=2019,geography="county",
 testing<-F
 if(testing==T){
   ex<-prepFood(year=2020,geography="county")
+  ex<-prepFood(year=2019,geography="zcta")
 }
 
