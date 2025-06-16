@@ -34,20 +34,19 @@ prepTransportation<-function(year=2023,geography="county",
                    uace="https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_uace_bg_fips_2022.csv"#,
                    ){
   year.map<-ifelse(year>=2020,"2020","2010")
-  if(geography=="zcta"){
-    zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_bg_fips_",year.map,".csv")
-    #map1<-read.csv(zcta,header=T,sep="|")
-    map2<-read.csv(zcta,header=F,sep=",")
-    names(map2)<-c("GEOID","LAT","LONG","parse","ZCTA","NAME")
-    #map2$GEOID<-map2[,str_detect(names(map2),"GEOID_TRACT")]
-    #map2$ZCTA<-map2[,str_detect(names(map2),"GEOID_ZCTA5_")]
-    map2<-map2[,c("GEOID","ZCTA")]
-    map2<-map2[!duplicated(map2),]
-    map2$GEOID<-str_pad(as.character(map2$GEOID),width=12,side="left",pad="0")
-    map2$GEOID<-substr(map2$GEOID,1,11)
-    map2$ZCTA<-str_pad(as.character(map2$ZCTA),width=5,side="left",pad="0")
-    map2<-map2[!duplicated(map2),]
-  }
+  zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_bg_fips_",year.map,".csv")
+  #map1<-read.csv(zcta,header=T,sep="|")
+  map2<-read.csv(zcta,header=F,sep=",")
+  names(map2)<-c("GEOID","LAT","LONG","parse","ZCTA","NAME")
+  #map2$GEOID<-map2[,str_detect(names(map2),"GEOID_TRACT")]
+  #map2$ZCTA<-map2[,str_detect(names(map2),"GEOID_ZCTA5_")]
+  map2<-map2[,c("GEOID","ZCTA")]
+  map2<-map2[!duplicated(map2),]
+  map2$GEOID<-str_pad(as.character(map2$GEOID),width=12,side="left",pad="0")
+  map2$GEOID<-substr(map2$GEOID,1,11)
+  map2$ZCTA<-str_pad(as.character(map2$ZCTA),width=5,side="left",pad="0")
+  map2<-map2[!duplicated(map2),]
+
   
   map1<-read.csv(uace,header=T)
   ntd<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/shape_ntd_",year,".csv"),header=T)
