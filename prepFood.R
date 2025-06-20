@@ -19,10 +19,19 @@ prepFood<-function(year=2019,geography="county"#,
                                  ifelse(year>=2014,"2015",
                                         ifelse(year>=2012,"2012","2011")))))
   year.map<-ifelse(year>=2020,"2020","2010")
+  if(year.map=="2020"){
+    fips.convert<-read.table("https://www2.census.gov/geo/docs/maps-data/data/rel2020/blkgrp/tab20_blkgrp20_blkgrp10_natl.txt",header=T,sep="|")[,c("GEOID_BLKGRP_20","GEOID_BLKGRP_10")]
+    fips.convert$GEOID_BLKGRP_20<-str_pad(fips.convert$GEOID_BLKGRP_20,width=12,side="left",pad="0")
+    fips.convert$GEOID_BLKGRP_10<-str_pad(fips.convert$GEOID_BLKGRP_10,width=12,side="left",pad="0")
+    fips.convert$tract10<-substr(fips.convert$GEOID_BLKGRP_10,1,11)
+    fips.convert$tract20<-substr(fips.convert$GEOID_BLKGRP_20,1,11)
+    fips.convert<-fips.convert[,c("tract10","tract20")]
+    fips.convert<-fips.convert[!duplicated(fips.convert),]
+  }
   if(geography=="zcta"){
     zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_bg_fips_",year.map,".csv")
     #map1<-read.csv(zcta,header=T,sep="|")
-    map1<-read.csv(zcta,header=F,sep=",")
+    map1<-read.csv(zcta,header=T,sep=",")
     names(map1)<-c("GEOID","LAT","LONG","parse","ZCTA","NAME")
     #map1$GEOID<-map1[,str_detect(names(map1),"GEOID_TRACT")]
     #map1$ZCTA<-map1[,str_detect(names(map1),"GEOID_ZCTA5_")]
@@ -32,6 +41,14 @@ prepFood<-function(year=2019,geography="county"#,
     map1$GEOID<-substr(map1$GEOID,1,11)
     map1$ZCTA<-str_pad(as.character(map1$ZCTA),width=5,side="left",pad="0")
     map1<-map1[!duplicated(map1),]
+    
+    if(year>=2020){
+      map1<-merge(map1,fips.convert,by.x="GEOID",by.y="tract20",all.x=T)
+      map1$GEOID<-map1$tract10
+      map1<-map1[!is.na(map1$GEOID),c("GEOID","ZCTA")]
+      map1<-map1[!duplicated(map1),]
+    }
+    
   }
   #pop<-pullACS(geography=geography,year=year,geometry=F)
   fara<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FARA%20estimates%20",fara.year,".csv"),header=T)
@@ -39,6 +56,16 @@ prepFood<-function(year=2019,geography="county"#,
   fara<-fara[fara$year==fara.year,]
   fara<-as.data.frame(sapply(fara,as.numeric))
   fara$CensusTract<-str_pad(as.character(fara$CensusTract),width=11,side="left",pad="0")
+  if(year>=2020){
+    fara<-merge(fara,fips.convert,by.x="CensusTract",by.y="tract10",all.x=T)
+    fara$CensusTract<-fara$tract20
+    fara<-fara[,!names(fara) %in% c("tract10","tract20")]
+    fara<-fara[!duplicated(fara),]
+    fara<-fara%>%
+      group_by(CensusTract)%>%
+      summarise_each(funs=c("mean"))
+    fara<-fara[!duplicated(fara),]
+  }
   fara$POP2010<-(fara$lapophalf/(fara$lapophalfshare/100))
 
   if(geography=="county"){
