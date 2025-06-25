@@ -30,11 +30,12 @@ geo_locate<-function(obj,id=NULL,dims=2,benchmark="Public_AR_Current",vintage="C
   outs
 }
 
-prepTransportation<-function(year=2023,geography="county",
-                   uace="https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_uace_bg_fips_2022.csv"#,
+prepTransportation<-function(year=2023,geography="county"
                    ){
   year.map<-ifelse(year>=2020,"2020","2010")
   zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_bg_fips_",year.map,".csv")
+  uace.year<-ifelse(year>=2020,"2022","2019")
+  uace<-paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_uace_bg_fips_",uace.year,".csv")
   #map1<-read.csv(zcta,header=T,sep="|")
   map2<-read.csv(zcta,header=F,sep=",")
   names(map2)<-c("GEOID","LAT","LONG","parse","ZCTA","NAME")
