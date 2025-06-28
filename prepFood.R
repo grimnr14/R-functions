@@ -65,6 +65,7 @@ prepFood<-function(year=2019,geography="county"#,
       group_by(CensusTract)%>%
       summarise_each(funs(mean(.,na.rm=TRUE)))
     fara<-fara[!duplicated(fara),]
+    fara<-as.data.frame(fara)
   }
   fara$POP2010<-(fara$lapophalf/(fara$lapophalfshare/100))
 
@@ -87,7 +88,6 @@ prepFood<-function(year=2019,geography="county"#,
       group_by(CensusTract)%>%
       summarise_each(funs="sum")
   }
-  fara<-as.data.frame(fara)
   fara[is.na(fara)]<-0
 #  fara<-merge(fara,pop,by.x="CensusTract",by.y="GEOID",all.x=T)#we can use current year pop assuming static rate to calc estimated counts of residents by year
   
