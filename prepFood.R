@@ -71,6 +71,7 @@ prepFood<-function(year=2019,geography="county"#,
   if(geography=="county"){
     fara$CensusTract<-substr(fara$CensusTract,1,5)
     fara[is.na(fara)]<-0
+    fara<-as.data.frame(fara)
     fara<-fara%>%
       group_by(CensusTract)%>%
       summarise_each(funs="sum")
@@ -81,6 +82,7 @@ prepFood<-function(year=2019,geography="county"#,
     fara$CensusTract<-fara$ZCTA
     fara<-fara[,!names(fara) %in% c("ZCTA")]
     fara[is.na(fara)]<-0
+    fara<-as.data.frame(fara)
     fara<-fara%>%
       group_by(CensusTract)%>%
       summarise_each(funs="sum")
