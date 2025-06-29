@@ -132,13 +132,13 @@ prepFood<-function(year=2019,geography="county"#,
   food<-merge(fea,fara,by.x="GEOID",by.y="CensusTract",all=T)#note censustract is really the same level as geoid at this point
 
   food<-food[!duplicated(food),]
-  food[,!names(food) %in% c("FIPS","State","County")]
+  food[food$GEOID!="0",!names(food) %in% c("FIPS","State","County")]
 }
 
 testing<-F
 if(testing==T){
-  ex<-prepFood(year=2020,geography="county")
-  ex<-prepFood(year=2019,geography="zcta")
+  ex<-prepFood(year=2023,geography="county")
+  ex<-prepFood(year=2023,geography="zcta")
   ex<-prepFood(year=2023,geography="tract")
   
 }
