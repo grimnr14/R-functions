@@ -20,35 +20,54 @@ prepFood<-function(year=2019,geography="county"#,
                                         ifelse(year>=2012,"2012","2011")))))
   year.map<-ifelse(year>=2020,"2020","2010")
   if(year.map=="2020"){
-    fips.convert<-read.table("https://www2.census.gov/geo/docs/maps-data/data/rel2020/blkgrp/tab20_blkgrp20_blkgrp10_natl.txt",header=T,sep="|")[,c("GEOID_BLKGRP_20","GEOID_BLKGRP_10")]
-    fips.convert$GEOID_BLKGRP_20<-str_pad(fips.convert$GEOID_BLKGRP_20,width=12,side="left",pad="0")
-    fips.convert$GEOID_BLKGRP_10<-str_pad(fips.convert$GEOID_BLKGRP_10,width=12,side="left",pad="0")
-    fips.convert$tract10<-substr(fips.convert$GEOID_BLKGRP_10,1,11)
-    fips.convert$tract20<-substr(fips.convert$GEOID_BLKGRP_20,1,11)
+    fips.convert<-read.table("https://www2.census.gov/geo/docs/maps-data/data/rel2020/tract/tab20_tract20_tract10_natl.txt",header=T,sep="|")[,c("GEOID_TRACT_20","GEOID_TRACT_10")]
+    #fips.convert<-read.table("https://www2.census.gov/geo/docs/maps-data/data/rel2020/blkgrp/tab20_blkgrp20_blkgrp10_natl.txt",header=T,sep="|")[,c("GEOID_BLKGRP_20","GEOID_BLKGRP_10")]
+    #fips.convert$GEOID_TRACT_20<-str_pad(fips.convert$GEOID_TRACT_20,width=12,side="left",pad="0")
+    #fips.convert$GEOID_TRACT_10<-str_pad(fips.convert$GEOID_TRACT_10,width=12,side="left",pad="0")
+    fips.convert$tract10<-substr(fips.convert$GEOID_TRACT_10,1,11)
+    fips.convert$tract20<-substr(fips.convert$GEOID_TRACT_20,1,11)
     fips.convert<-fips.convert[,c("tract10","tract20")]
     fips.convert<-fips.convert[!duplicated(fips.convert),]
-  }
-  if(geography=="zcta"){
-    zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_bg_fips_",year.map,".csv")
-    #map1<-read.csv(zcta,header=T,sep="|")
-    map1<-read.csv(zcta,header=T,sep=",")
-    names(map1)<-c("GEOID","LAT","LONG","parse","ZCTA","NAME")
-    #map1$GEOID<-map1[,str_detect(names(map1),"GEOID_TRACT")]
-    #map1$ZCTA<-map1[,str_detect(names(map1),"GEOID_ZCTA5_")]
-    map1<-map1[,c("GEOID","ZCTA")]
-    map1<-map1[!duplicated(map1),]
-    map1$GEOID<-str_pad(as.character(map1$GEOID),width=12,side="left",pad="0")
-    map1$GEOID<-substr(map1$GEOID,1,11)
-    map1$ZCTA<-str_pad(as.character(map1$ZCTA),width=5,side="left",pad="0")
-    map1<-map1[!duplicated(map1),]
     
-    if(year>=2020){
+    if(geography=="zcta"){
+      zcta=paste0("https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_tract20_natl.txt")
+      #zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_bg_fips_",year.map,".csv")
+      map1<-read.csv(zcta,header=T,sep="|")
+      #map1<-read.csv(zcta,header=T,sep=",")
+      #names(map1)<-c("GEOID","LAT","LONG","parse","ZCTA","NAME")
+      map1$GEOID<-map1[,str_detect(names(map1),"GEOID_TRACT")]
+      map1$ZCTA<-map1[,str_detect(names(map1),"GEOID_ZCTA5_")]
+      map1<-map1[,c("GEOID","ZCTA")]
+      map1$GEOID<-ifelse(nchar(map1$GEOID)<11,str_pad(map1$GEOID,width=11,side="left",pad="0"),map1$GEOID)
+      map1<-map1[!duplicated(map1),]
+      #map1$GEOID<-str_pad(as.character(map1$GEOID),width=12,side="left",pad="0")
+      #map1$GEOID<-substr(map1$GEOID,1,11)
+      map1$ZCTA<-str_pad(as.character(map1$ZCTA),width=5,side="left",pad="0")
+      map1<-map1[!duplicated(map1),]
+      
       map1<-merge(map1,fips.convert,by.x="GEOID",by.y="tract20",all.x=T)
       map1$GEOID<-map1$tract10
       map1<-map1[!is.na(map1$GEOID),c("GEOID","ZCTA")]
       map1<-map1[!duplicated(map1),]
     }
-    
+  }else{
+    if(geography=="zcta"){
+      zcta=paste0("https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_tract_rel_10.txt")
+      #zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_bg_fips_",year.map,".csv")
+      map1<-read.csv(zcta,header=T,sep=",")
+      #map1<-read.csv(zcta,header=T,sep=",")
+      #names(map1)<-c("GEOID","LAT","LONG","parse","ZCTA","NAME")
+      #map1$GEOID<-map1[,str_detect(names(map1),"GEOID_TRACT")]
+      #map1$ZCTA<-map1[,str_detect(names(map1),"GEOID_ZCTA5_")]
+      map1<-map1[,c("GEOID","ZCTA5")]
+      map1<-map1[!duplicated(map1),]
+      map1$ZCTA<-map1$ZCTA5
+      map1$GEOID<-str_pad(as.character(map1$GEOID),width=11,side="left",pad="0")
+      #map1$GEOID<-substr(map1$GEOID,1,11)
+      map1$ZCTA<-str_pad(as.character(map1$ZCTA),width=5,side="left",pad="0")
+      map1<-map1[!duplicated(map1),c("GEOID","ZCTA")]
+      
+    }
   }
   #pop<-pullACS(geography=geography,year=year,geometry=F)
   fara<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FARA%20estimates%20",fara.year,".csv"),header=T)
@@ -115,10 +134,25 @@ prepFood<-function(year=2019,geography="county"#,
     fea$GEOID<-fea$FIPS
   }
   if(geography=="zcta"){
-    map2<-map1
-    map2$GEOID<-substr(map2$GEOID,1,5)
-    map2<-map2[!duplicated(map2)&!is.na(map2$ZCTA),]
-    fea<-merge(fea,map2,by.x="FIPS",by.y="GEOID",all.x=T)
+    if(year.map=="2020"){
+      zcta=paste0("https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_county20_natl.txt")
+      map2<-read.csv(zcta,header=T,sep="|")
+      map2$ZCTA<-str_pad(map2$GEOID_ZCTA5_20,width=5,side="left",pad="0")
+      map2$GEOID<-str_pad(map2$GEOID_COUNTY_20,width=5,side="left",pad="0")
+      map2<-map2[,c("ZCTA","GEOID")]
+      map2<-map2[!duplicated(map2)&!is.na(map2$ZCTA),]
+    }else{
+      zcta=paste0("https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt")
+      map2<-read.csv(zcta,header=T,sep=",")
+      map2$ZCTA<-str_pad(map2$ZCTA5,width=5,side="left",pad="0")
+      map2$GEOID<-str_pad(map2$GEOID,width=5,side="left",pad="0")
+      map2<-map2[,c("ZCTA","GEOID")]
+      map2<-map2[!duplicated(map2)&!is.na(map2$ZCTA),]
+    }
+    #map2<-map1
+    #map2$GEOID<-substr(map2$GEOID,1,5)
+    #map2<-map2[!duplicated(map2)&!is.na(map2$ZCTA),]
+    fea<-merge(fea,map2,by.x="FIPS",by.y="GEOID",all.x=T)#THIS IS CAUSING ONE TO MANY MAPPING OF ZCTA TO COUNTY!!! NEED ACTUAL MAPPING FROM CENSUS
     fea$GEOID<-fea$ZCTA
   }
   if(geography=="tract"){
@@ -131,7 +165,7 @@ prepFood<-function(year=2019,geography="county"#,
   
   food<-merge(fea,fara,by.x="GEOID",by.y="CensusTract",all=T)#note censustract is really the same level as geoid at this point
 
-  food<-food[!duplicated(food),]
+  food<-food[!duplicated(food)&!is.na(food$GEOID),]
   food[food$GEOID!="0",!names(food) %in% c("FIPS","State","County")]
 }
 
