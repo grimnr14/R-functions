@@ -93,20 +93,20 @@ prepTransportation<-function(year=2023,geography="county"
   transp$ua_per_facilities_prior1980<-transp$per_facilities_prior1980
   transp$ua_per_facilities_after2000<-100-transp$per_facilities_prior2000
   transp$ua_total_voms<-transp$agency_voms
-  transp$ua_voms_per_person<-transp$agency_voms#numerator only
+  #transp$ua_voms_per_person<-transp$agency_voms#numerator only
   transp$ua_per_dr_service<-transp$bin_demandresponse/(transp$bin_bus+transp$bin_demandresponse+transp$bin_ferry+transp$bin_light_commuterail)
   transp$ua_per_do_service<-transp$bin_directly_operated/(transp$bin_directly_operated+transp$bin_purchased_transportation)
-  transp$ua_voms_per_facility<-transp$agency_voms/transp$total_facilities
-  transp$ua_oe_after_fares<-transp$total_operating_expenses-transp$fare_revenues_earned
+  #transp$ua_voms_per_facility<-transp$agency_voms/transp$total_facilities
+  #transp$ua_oe_after_fares<-transp$total_operating_expenses-transp$fare_revenues_earned
   transp$ua_est_operating_cost_per_person<-transp$total_operating_expenses
-  transp$ua_est_daily_cost<-24*transp$cost_per_hour#multiply acs feature for total riders
-  transp$ua_cost_per_hour<-transp$cost_per_hour
-  transp$ua_passengers_per_hour<-transp$passengers_per_hour
+  #transp$ua_est_daily_cost<-24*transp$cost_per_hour#multiply acs feature for total riders
+  #transp$ua_cost_per_hour<-transp$cost_per_hour
+  #transp$ua_passengers_per_hour<-transp$passengers_per_hour
   transp$ua_est_daily_ridership<-24*transp$passengers_per_hour#multiply acs feature for total riders
-  transp$ua_est_cost_per_passenger<-transp$cost_per_hour/transp$passengers_per_hour
-  transp$ua_est_fare_per_person<-transp$fare_revenues_earned#numerator only
+  #transp$ua_est_cost_per_passenger<-transp$cost_per_hour/transp$passengers_per_hour
+  #transp$ua_est_fare_per_person<-transp$fare_revenues_earned#numerator only
   transp$fatalmvapercapita<-transp$FATALS
-  transp$fatalmvatrailerpercapita<-transp$TractorTrailor
+  #transp$fatalmvatrailerpercapita<-transp$TractorTrailor
   transp$fatalmvapedestrianstrikepercapita<-transp$PEDS
   transp$fatalintoxicationmvapercapita<-transp$driver_intox
   
