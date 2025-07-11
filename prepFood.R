@@ -5,7 +5,7 @@ library(stringr)
 library(sf)
 library(readxl)
 library(tigris)
-library(censusxy)
+#library(censusxy)
 
 prepFood<-function(year=2019,geography="county"#,
                    #zcta="https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_tract_fips_2020.txt",
