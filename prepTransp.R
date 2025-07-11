@@ -3,32 +3,7 @@ library(stringr)
 library(sf)
 library(readxl)
 library(tigris)
-library(censusxy)
-
-geo_locate<-function(obj,id=NULL,dims=2,benchmark="Public_AR_Current",vintage="Current_Current",geography="county",input="polygon"){#accepts an sf object
-  outs<-NULL
-  obj$geometry<-st_zm(obj$geometry,drop=T)
-  for(i in unique(as.data.frame(obj)[,id])){
-    e<-obj[as.data.frame(obj)[,id]==i,"geometry"]
-    #len_m<-st_length(e)
-    if(input=="point"){
-      e<-unlist(e$geometry)
-      e<-matrix(e,nrow=length(e)/dims,byrow=T)
-    }else{
-      e<-unlist(st_boundary(e$geometry))
-      e<-matrix(e,nrow=length(e)/dims)#2 points assumed on all, but may be 3
-    }
-    if(length(e)>0){
-      for(n in 1:nrow(e)){
-        out<-cxy_geography(lat=e[n,2],lon=e[n,1],benchmark=benchmark,vintage=vintage)#gives all points along lines
-        out<-out[,c(str_detect(tolower(names(out)),geography)&str_detect(names(out),"GEOID"))]
-        out<-out[1]
-        outs<-plyr::rbind.fill(outs,data.frame(row=i,point=n,GEOID=out))#,length=len_m,lat=e[n,2],lon=e[n,1]))
-      }
-    }
-  }
-  outs
-}
+#library(censusxy)
 
 prepTransportation<-function(year=2023,geography="county"
                    ){
