@@ -18,12 +18,17 @@ prepFood<-function(year=2019,geography="county"#,
                           ifelse(year>=2015,"2015",
                                  ifelse(year>=2014,"2015",
                                         ifelse(year>=2012,"2012","2011")))))
+#  pop<-"https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/population.csv"
+  pop<-"https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FARA%20estimates%202010.csv"
+  pop<-read.csv(pop)
+  pop<-pop[,c("CensusTract","POP2010")]
+
   year.map<-ifelse(year>=2020,"2020","2010")
   if(year.map=="2020"){
     fips.convert<-read.table("https://www2.census.gov/geo/docs/maps-data/data/rel2020/tract/tab20_tract20_tract10_natl.txt",header=T,sep="|")[,c("GEOID_TRACT_20","GEOID_TRACT_10")]
     #fips.convert<-read.table("https://www2.census.gov/geo/docs/maps-data/data/rel2020/blkgrp/tab20_blkgrp20_blkgrp10_natl.txt",header=T,sep="|")[,c("GEOID_BLKGRP_20","GEOID_BLKGRP_10")]
-    #fips.convert$GEOID_TRACT_20<-str_pad(fips.convert$GEOID_TRACT_20,width=12,side="left",pad="0")
-    #fips.convert$GEOID_TRACT_10<-str_pad(fips.convert$GEOID_TRACT_10,width=12,side="left",pad="0")
+    fips.convert$GEOID_TRACT_20<-str_pad(fips.convert$GEOID_TRACT_20,width=11,side="left",pad="0")
+    fips.convert$GEOID_TRACT_10<-str_pad(fips.convert$GEOID_TRACT_10,width=11,side="left",pad="0")
     fips.convert$tract10<-substr(fips.convert$GEOID_TRACT_10,1,11)
     fips.convert$tract20<-substr(fips.convert$GEOID_TRACT_20,1,11)
     fips.convert<-fips.convert[,c("tract10","tract20")]
@@ -69,28 +74,41 @@ prepFood<-function(year=2019,geography="county"#,
       
     }
   }
-  #pop<-pullACS(geography=geography,year=year,geometry=F)
   fara<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FARA%20estimates%20",fara.year,".csv"),header=T)
-  #read.csv("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FARA%20estimates%202019.csv",header=T)
   fara<-fara[fara$year==fara.year,]
+  if(!"POP2010" %in% names(fara)){
+    fara<-merge(fara,pop,by="CensusTract",all.x=T)
+  }
   fara<-as.data.frame(sapply(fara,as.numeric))
   fara$CensusTract<-str_pad(as.character(fara$CensusTract),width=11,side="left",pad="0")
-  if(year>=2020){
+  summary(as.factor(fara$CensusTract %in% fips.convert$tract10))
+  fara<-fara[!is.na(fara$CensusTract),]
+  if(year>=2020){#if the file required 2010-2020 mapping
     fara<-merge(fara,fips.convert,by.x="CensusTract",by.y="tract10",all.x=T)
     fara$CensusTract<-fara$tract20
     fara<-fara[,!names(fara) %in% c("tract10","tract20")]
-    fara<-fara[!duplicated(fara),]
-    fara<-fara%>%
-      group_by(CensusTract)%>%
-      summarise_each(funs(mean(.,na.rm=TRUE)))
-    fara<-fara[!duplicated(fara),]
-    fara<-as.data.frame(fara)
+    fara<-fara[!duplicated(fara)&!is.na(fara$CensusTract),]
+    outs<-data.frame(CensusTract=fara[!duplicated(fara[,1]),1])
+    for(i in 2:ncol(fara)){
+      d<-fara[,c(1,i)]
+      d<-d[!is.na(d[,2]),]
+      d<-aggregate(data=d,.~CensusTract,FUN="max")#max value for geographies, assuming splits are most common one to many
+      d<-as.data.frame(d)
+#      fara<-fara[,!names(fara) %in% names(d)[2]]
+      outs<-merge(outs,d,by="CensusTract",all.x=T)
+      print(i)
+    }
+    outs<-outs[!duplicated(outs),]
+    fara<-as.data.frame(outs)
+    gc()
   }
-  fara$POP2010<-(fara$lapophalf/(fara$lapophalfshare/100))
+
+  #  fara$POP2010<-(fara$lapophalf/(fara$lapophalfshare/100))
 
   if(geography=="county"){
     fara$CensusTract<-substr(fara$CensusTract,1,5)
     fara[is.na(fara)]<-0
+    fara[!duplicated(fara),]
     fara<-as.data.frame(fara)
     fara<-fara%>%
       group_by(CensusTract)%>%
@@ -99,6 +117,7 @@ prepFood<-function(year=2019,geography="county"#,
   if(geography=="zcta"){
     fara<-merge(fara,map1,by.x="CensusTract",by.y="GEOID",all.x=T)
     fara<-fara[!is.na(fara$ZCTA),]
+    fara[!duplicated(fara),]
     fara$CensusTract<-fara$ZCTA
     fara<-fara[,!names(fara) %in% c("ZCTA")]
     fara[is.na(fara)]<-0
@@ -108,7 +127,10 @@ prepFood<-function(year=2019,geography="county"#,
       summarise_each(funs="sum")
   }
   fara[is.na(fara)]<-0
-#  fara<-merge(fara,pop,by.x="CensusTract",by.y="GEOID",all.x=T)#we can use current year pop assuming static rate to calc estimated counts of residents by year
+  fara[!duplicated(fara),]
+  fara<-as.data.frame(fara)
+  
+#  fara<-merge(fara,pop[,c("GEOID","pop2010")],by.x="CensusTract",by.y="GEOID",all.x=T)#we can use current year pop assuming static rate to calc estimated counts of residents by year
   
   vars<-c("CensusTract","POP2010",
           "lapophalf","lakidshalf","laseniorshalf","lasnaphalf",
