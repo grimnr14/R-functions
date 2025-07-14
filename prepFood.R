@@ -96,7 +96,7 @@ prepFood<-function(year=2019,geography="county"#,
       d<-as.data.frame(d)
 #      fara<-fara[,!names(fara) %in% names(d)[2]]
       outs<-merge(outs,d,by="CensusTract",all.x=T)
-      print(i)
+#      print(i)
     }
     outs<-outs[!duplicated(outs),]
     fara<-as.data.frame(outs)
