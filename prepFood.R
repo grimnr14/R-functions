@@ -184,9 +184,15 @@ prepFood<-function(year=2019,geography="county"#,
     fea<-merge(fea,map2,by.x="FIPS",by.y="county",all.x=T)
     fea$GEOID<-fea$tract
   }
-  
+  fea<-fea[,!names(fea) %in% c("FIPS","ZCTA","State","County")]
+  fea<-fea%>%
+    group_by(GEOID)%>%
+    summarise_each(funs=c("max"))
+  fea<-as.data.frame(fea)
   food<-merge(fea,fara,by.x="GEOID",by.y="CensusTract",all=T)#note censustract is really the same level as geoid at this point
-
+  remove(fea,fara)
+  gc()
+  
   food<-food[!duplicated(food)&!is.na(food$GEOID),]
   food[food$GEOID!="0",!names(food) %in% c("FIPS","State","County")]
 }
