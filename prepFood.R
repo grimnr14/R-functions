@@ -81,7 +81,6 @@ prepFood<-function(year=2019,geography="county"#,
   }
   fara<-as.data.frame(sapply(fara,as.numeric))
   fara$CensusTract<-str_pad(as.character(fara$CensusTract),width=11,side="left",pad="0")
-  summary(as.factor(fara$CensusTract %in% fips.convert$tract10))
   fara<-fara[!is.na(fara$CensusTract),]
   if(year>=2020){#if the file required 2010-2020 mapping
     fara<-merge(fara,fips.convert,by.x="CensusTract",by.y="tract10",all.x=T)
