@@ -193,8 +193,7 @@ prepFood<-function(year=2019,geography="county"#,
   gc()
   
   food<-food[!duplicated(food)&!is.na(food$GEOID),]
-  food[food$GEOID!="0",!names(food) %in% c("FIPS","State","County","WICS","WICSPTH","SNAPS","SNAPSPTH","REDEMPSNAPS","REDEMPWICS","PCSNAPBEN","PCWICREDEMP","FOODBANKS","FOODINSEC","CHFOODINSEC","VLFOODSEC","CHVLFOODSEC",
-                                           "lapophalf","lakidshalf","laseniorshalf","lasnaphalf","lapophalfshare","lakidshalfshare","laseniorshalfshare","lasnaphalfshare")]
+  food[food$GEOID!="0",!names(food) %in% c("FIPS","State","County")]
 }
 
 testing<-F
