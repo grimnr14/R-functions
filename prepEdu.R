@@ -288,4 +288,4 @@ prepEducation<-function(year=2023,geography="county"){
   remove(ipeds,ccd)
   out
 }
-ex<-prepEducation(year=2023,geography="county")
+#ex<-prepEducation(year=2023,geography="county")
