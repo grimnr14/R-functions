@@ -239,7 +239,7 @@ prepEducation<-function(year=2023,geography="county"){
     group_by(fips)%>%
     summarise_each(funs=c("sum"))
   ccd[is.na(ccd)]<-0
-  names(ccd)<-c("geoid",names(ccd)[2:ncol(ccd)])
+  names(ccd)<-c("GEOID",names(ccd)[2:ncol(ccd)])
   ccd<-as.data.frame(ccd)
   
   ipeds<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/ipeds_clean_",year,".txt"),header=T,sep="|")
@@ -281,10 +281,10 @@ prepEducation<-function(year=2023,geography="county"){
                                                        "est_avg_inst_staff_salary")]
   ipedsAvg<-ipedsAvg%>%group_by(fips)%>%summarise_each(funs=c("mean"))
   ipeds<-merge(ipedsSum,ipedsAvg,by="fips",all=T)
-  names(ipeds)<-c("geoid",names(ipeds)[2:ncol(ipeds)])
+  names(ipeds)<-c("GEOID",names(ipeds)[2:ncol(ipeds)])
   ipeds<-as.data.frame(ipeds)
   
-  out<-merge(ccd,ipeds,by="geoid",all=T)
+  out<-merge(ccd,ipeds,by="GEOID",all=T)
   remove(ipeds,ccd)
   out
 }
