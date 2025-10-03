@@ -106,42 +106,30 @@ flat_map<-function(data=NULL,#should be a data.frame with a valid geoid for fips
 loadSHP<-function(state=NULL,geography="tract",year="2020",outdir=NULL,destfile=NULL){
   st<-tigris::fips_codes
   st<-st[st$state==state,]$state_code[[1]]#converts state abbreviation to fips code
-  year<-ifelse(as.numeric(year)<2020,"2019","2023")
-  geography<-ifelse(geography=="zcta5","zcta",geography)
+  
   if(is.null(state)){#if whole nation, only retrieve .shp for state/county
     if(geography=="state"){#for state
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/STATE/tl_",year,"_us_state.zip")
-      url<-paste0("https://github.com/grimnr14/shpfiles/raw/refs/heads/main/",year,"/",geography,"/","tl_",year,"_us_",geography,".zip")
+      url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/STATE/tl_",year,"_us_state.zip")
     }
     if(geography=="county"){
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/COUNTY/tl_",year,"_us_county.zip")
-      url<-paste0("https://github.com/grimnr14/shpfiles/raw/refs/heads/main/",year,"/",geography,"/","tl_",year,"_us_",geography,".zip")
+      url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/COUNTY/tl_",year,"_us_county.zip")
     }
     if(geography=="zcta5"){
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/ZCTA510/tl_",year,"_us_zcta510.zip")
-      url<-paste0("https://github.com/grimnr14/shpfiles/raw/refs/heads/main/",year,"/",geography,"/","tl_",year,"_us_",geography,".zip")
+      url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/ZCTA510/tl_",year,"_us_zcta510.zip")
     }
     
   }else{#if state was specified, retrieve only for that area
     if(geography=="county"){#still pulls everything if county, which should not be an issue
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/COUNTY/tl_",year,"_us_county.zip")
-      url<-paste0("https://github.com/grimnr14/shpfiles/raw/refs/heads/main/",year,"/",geography,"/","tl_",year,"_us_",geography,"_",state,".zip")
-      
+      url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/COUNTY/tl_",year,"_us_county.zip")
     }
     if(geography=="zcta5"){
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/ZCTA510/tl_",year,"_us_zcta510.zip")
-      url<-paste0("https://github.com/grimnr14/shpfiles/raw/refs/heads/main/",year,"/",geography,"/","tl_",year,"_us_",geography,"_",state,".zip")
-      
+      url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/ZCTA510/tl_",year,"_us_zcta510.zip")
     }
     if(geography=="tract"){#still pulls everything if zip, which should not be an issue
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/TRACT/tl_",year,"_",st,"_tract.zip")
-      url<-paste0("https://github.com/grimnr14/shpfiles/raw/refs/heads/main/",year,"/",geography,"/","tl_",year,"_us_",geography,"_",state,".zip")
-      
+      url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/TRACT/tl_",year,"_",st,"_tract.zip")
     }
     if(geography=="bg"){
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/BG/tl_",year,"_",st,"_bg.zip")
-      url<-paste0("https://github.com/grimnr14/shpfiles/raw/refs/heads/main/",year,"/",geography,"/","tl_",year,"_us_",geography,"_",state,".zip")
-      
+      url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/BG/tl_",year,"_",st,"_bg.zip")
     }
   }
   
@@ -152,13 +140,4 @@ loadSHP<-function(state=NULL,geography="tract",year="2020",outdir=NULL,destfile=
   
   shp<-st_read(dsn=paste0(outdir,paste0("\\",shp_files)))#then load directly as shp assuming only 1 file matches
   shp
-}
-
-testing<-F
-if(testing==T){
-  url<-"https://raw.githubusercontent.com/grimnr14/education/refs/heads/main/brief%20education%20index%202019-2023.csv"
-  ex<-read.csv(url,header=T)
-  ex<-ex[!duplicated(ex)&ex$year=="2019"&ex$geolevel=="county",]
-  ex$geoid<-substr(ex$geoid,8,nchar(ex$geoid))
-  flat_map(data=ex,year=2019,geography="county",state="MD",var="education_rnk",geoid="geoid")
 }
