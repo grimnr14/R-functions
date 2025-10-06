@@ -118,7 +118,7 @@ loadSHP<-function(state=NULL,geography="tract",year="2020",outdir=NULL,destfile=
     }
     if(geography=="zcta5"){
       #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/ZCTA510/tl_",year,"_us_zcta510.zip")
-      url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,".zip")
+      url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/zcta/","tl_",y,"_us_zcta.zip")
     }
     
   }else{#if state was specified, retrieve only for that area
@@ -130,7 +130,7 @@ loadSHP<-function(state=NULL,geography="tract",year="2020",outdir=NULL,destfile=
     }
     if(geography=="zcta5"){
       #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/ZCTA510/tl_",year,"_us_zcta510.zip")
-      url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/zcta/","tl_",y,"_us_",g,"_",s,".zip")
+      url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/zcta/","tl_",y,"_us_zcta_",s,".zip")
     }
     if(geography=="tract"){#still pulls everything if zip, which should not be an issue
       #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/TRACT/tl_",year,"_",st,"_tract.zip")
