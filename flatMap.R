@@ -17,6 +17,7 @@ flat_map<-function(data=NULL,#should be a data.frame with a valid geoid for fips
                    bin=5,#number of levels to each fill in plot
                    palette="RdBu"#RColorBrewer palette for plotting fills. See brewer.pal.info
 ){
+  geography<-ifelse(geography=="zip code tabulation area","zcta",geography)
   if(is.null(shp)){#if shp is not specified, retrieve defaults from tigris
     shp<-loadSHP(state=state,geography=geography,year=year,outdir="./",destfile="temp.zip")
     if(geography=="state"){
