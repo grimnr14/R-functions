@@ -25,7 +25,8 @@ prepFood<-function(year=2019,geography="county"#,
 
   year.map<-ifelse(year>=2020,"2020","2010")
   if(year.map=="2020"){
-    fips.convert<-read.table("https://www2.census.gov/geo/docs/maps-data/data/rel2020/tract/tab20_tract20_tract10_natl.txt",header=T,sep="|")[,c("GEOID_TRACT_20","GEOID_TRACT_10")]
+    #fips.convert<-read.table("https://www2.census.gov/geo/docs/maps-data/data/rel2020/tract/tab20_tract20_tract10_natl.txt",header=T,sep="|")[,c("GEOID_TRACT_20","GEOID_TRACT_10")]
+    fips.convert<-read.table("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_tract20_tract10_natl.txt",header=T,sep="|")[,c("GEOID_TRACT_20","GEOID_TRACT_10")]
     #fips.convert<-read.table("https://www2.census.gov/geo/docs/maps-data/data/rel2020/blkgrp/tab20_blkgrp20_blkgrp10_natl.txt",header=T,sep="|")[,c("GEOID_BLKGRP_20","GEOID_BLKGRP_10")]
     fips.convert$GEOID_TRACT_20<-str_pad(fips.convert$GEOID_TRACT_20,width=11,side="left",pad="0")
     fips.convert$GEOID_TRACT_10<-str_pad(fips.convert$GEOID_TRACT_10,width=11,side="left",pad="0")
@@ -35,7 +36,8 @@ prepFood<-function(year=2019,geography="county"#,
     fips.convert<-fips.convert[!duplicated(fips.convert),]
     
     if(geography=="zcta"){
-      zcta=paste0("https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_tract20_natl.txt")
+      #zcta=paste0("https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_tract20_natl.txt")
+      zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_zcta520_tract20_natl.txt")
       #zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/mapping_file_zcta_bg_fips_",year.map,".csv")
       map1<-read.csv(zcta,header=T,sep="|")
       #map1<-read.csv(zcta,header=T,sep=",")
@@ -156,14 +158,16 @@ prepFood<-function(year=2019,geography="county"#,
   }
   if(geography=="zcta"){
     if(year.map=="2020"){
-      zcta=paste0("https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_county20_natl.txt")
+      #zcta=paste0("https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_county20_natl.txt")
+      zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_zcta520_county20_natl.txt")
       map2<-read.csv(zcta,header=T,sep="|")
       map2$ZCTA<-str_pad(map2$GEOID_ZCTA5_20,width=5,side="left",pad="0")
       map2$GEOID<-str_pad(map2$GEOID_COUNTY_20,width=5,side="left",pad="0")
       map2<-map2[,c("ZCTA","GEOID")]
       map2<-map2[!duplicated(map2)&!is.na(map2$ZCTA),]
     }else{
-      zcta=paste0("https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt")
+      #zcta=paste0("https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt")
+      zcta=paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/zcta_county_rel_10.txt")
       map2<-read.csv(zcta,header=T,sep=",")
       map2$ZCTA<-str_pad(map2$ZCTA5,width=5,side="left",pad="0")
       map2$GEOID<-str_pad(map2$GEOID,width=5,side="left",pad="0")
