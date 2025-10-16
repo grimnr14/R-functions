@@ -1,5 +1,6 @@
 library(stringr)
 library(tigris)
+library(dplyr)
 
 geo_impute<-function(x,geoid="geoid",from,to,type="percent",year=2019){#requires fips coding
   ipums.key<-"59cba10d8a5da536fc06b59d66e936288d8a4d7eb286182ea94a5c84"
@@ -286,6 +287,6 @@ prepEducation<-function(year=2023,geography="county"){
   
   out<-merge(ccd,ipeds,by="GEOID",all=T)
   remove(ipeds,ccd)
-  out
+  out[,c("GEOID","regular_pub","alt_pub","special_pub","votech_pub","pub_prek","regular_pri","alt_pri","special_pri","votech_pri","pri_prek")]
 }
 #ex<-prepEducation(year=2023,geography="county")
