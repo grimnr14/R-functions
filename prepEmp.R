@@ -251,7 +251,7 @@ prepEmp<-function(year=2020,geography="tract"){
       es<-merge(lodes,map[,c("GEOID","ZCTA5")],by.x="geoid",by.y="GEOID")
       es<-es[!duplicated(es)&!is.na(es$ZCTA5),]
       es[is.na(es)]<-0
-      es<-es[,!names(es) %in% c("GEOID","geoid")]%>%
+      es<-es[,!names(es) %in% c("GEOID","geoid","year","state")]%>%
         group_by(ZCTA5)%>%
         summarise_each(funs=c(sum))
       
@@ -262,7 +262,7 @@ prepEmp<-function(year=2020,geography="tract"){
       
       es<-merge(es,map[,c("GEOID","ZCTA5")],by.x="geoid",by.y="GEOID")
       es<-es[!duplicated(es)&!is.na(es$ZCTA5)&es$ZCTA5!="",]
-      es<-es[,!names(es) %in% c("GEOID","geoid")]%>%
+      es<-es[,!names(es) %in% c("GEOID","geoid","year","state")]%>%
         group_by(ZCTA5)%>%
         summarise_each(funs=c(sum))
     }
@@ -280,4 +280,4 @@ prepEmp<-function(year=2020,geography="tract"){
 }
 
 
-#prepEmp(year=2020,"county")
+#prepEmp(year=2022,"zcta")
