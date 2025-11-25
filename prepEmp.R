@@ -226,14 +226,19 @@ prepEmp<-function(year=2020,geography="tract"){
   es<-lodes
   es$geography<-es$geoid
   if(geography=="county"){
-    es<-data.frame(tract=NA)
+#    es<-data.frame(tract=NA)
     vars<-c("C000","CA01","CA02","CA03","CFA01","CFA02","CFA03","CFA04","CFS01","CFS02","CFS03","CFS04","SI01","SI02","SI03","CE01","CE02","CE03")
-    for(i in vars){
-      e<-geo_impute(x=lodes[,c("geoid",i)],geoid="geoid",from="tract",to="county",type="count",year=ifelse(year>2019,2020,2019))
-      es<-merge(es,e,by="tract",all=T)
-    }
-    es$geography<-es$tract
-    es<-es[!is.na(es$tract),]
+    es<-es[,c("geography",vars)]%>%
+      group_by(geography)%>%
+      summarise_each(funs=c(sum))
+    es<-as.data.frame(es)
+#    for(i in vars){
+#      e<-geo_impute(x=lodes[,c("geoid",i)],geoid="geoid",from="tract",to="county",type="count",year=ifelse(year>2019,2020,2019))
+#      es<-merge(es,e,by="tract",all=T)
+#    }
+    
+#    es$geography<-es$tract
+#    es<-es[!is.na(es$tract),]
   }
   if(geography=="zcta"){
     if(year<2020){
