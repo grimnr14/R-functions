@@ -228,6 +228,8 @@ prepEmp<-function(year=2020,geography="tract"){
   if(geography=="county"){
 #    es<-data.frame(tract=NA)
     vars<-c("C000","CA01","CA02","CA03","CFA01","CFA02","CFA03","CFA04","CFS01","CFS02","CFS03","CFS04","SI01","SI02","SI03","CE01","CE02","CE03")
+    es$geography<-substr(es$geography,1,5)
+    es[is.na(es)]<-0
     es<-es[,c("geography",vars)]%>%
       group_by(geography)%>%
       summarise_each(funs=c(sum))
@@ -248,6 +250,7 @@ prepEmp<-function(year=2020,geography="tract"){
       
       es<-merge(lodes,map[,c("GEOID","ZCTA5")],by.x="geoid",by.y="GEOID")
       es<-es[!duplicated(es)&!is.na(es$ZCTA5),]
+      es[is.na(es)]<-0
       es<-es[,!names(es) %in% c("GEOID","geoid")]%>%
         group_by(ZCTA5)%>%
         summarise_each(funs=c(sum))
