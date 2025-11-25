@@ -171,6 +171,9 @@ geo_impute<-function(x,geoid="geoid",from,to,type="percent",year=2019){#requires
 
 
 prepEmp<-function(year=2020,geography="tract"){
+  if(year>2022){
+    year<-2022
+  }
   #do qwi vars----
   qwi<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/qwi_final_selected.csv"),header=T)
   qwi$geography<-str_pad(qwi$geography,width=5,side="left",pad="0")
