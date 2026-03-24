@@ -21,6 +21,10 @@ prepEconomic<-function(year=2022,geography="county"){
   
   soi<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/irs_soi_2013_2022.csv"),header=T)
   soi<-soi[soi$year==year,]
+  if(nrow(soi)==0&year>2022){
+    soi<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/irs_soi_2013_2022.csv"),header=T)
+    soi<-soi[soi$year==2022,]
+  }
   soi$STATEFIPS<-str_pad(soi$STATEFIPS,width=2,side="left",pad="0")
   soi$COUNTYFIPS<-str_pad(soi$COUNTYFIPS,width=3,side="left",pad="0")
   soi$FIPS<-paste0(soi$STATEFIPS,soi$COUNTYFIPS)
@@ -225,9 +229,19 @@ prepEconomic<-function(year=2022,geography="county"){
       out[,i]<-as.numeric(out[,i])/out$B01001_001.x#adjust for each geography's population by higher level rate, county or state
     }
   }
+  if(geography=="county"){
+    base<-data.frame(GEOID=str_pad(map$GEOID,width=11,side="left",pad="0"),county=substr(str_pad(map$GEOID,width=11,side="left",pad="0"),1,5))
+    base$GEOID<-substr(base$GEOID,1,5)
+    base<-base[!duplicated(base),]
+    out<-merge(base,out,by.x="GEOID",by.y="fips",all.x=T)
+    
+  }
   remove(pop,base,geopop,map,county.cnts,prcs,runs)
   out<-out[,!names(out) %in% c(skip,"county","county.y","county.x","B01001_001.x","B01001_001.y")]
   out<-out[!duplicated(out),]
+  for(i in 2:78){
+    out[,i]<-as.numeric(out[,i])
+  }
   out[!is.na(out$GEOID),]
 }
 

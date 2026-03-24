@@ -19,7 +19,10 @@ flat_map<-function(data=NULL,#should be a data.frame with a valid geoid for fips
 ){
   geography<-ifelse(geography=="zip code tabulation area","zcta",geography)
   if(is.null(shp)){#if shp is not specified, retrieve defaults from tigris
-    shp<-loadSHP(state=state,geography=geography,year=year,outdir="./",destfile="temp.zip")
+    shp<-loadSHP(state=state,geography=geography,year=year,outdir="./",destfile="temp.rds")
+    if(geography %in% c("county","tract","bg")){
+      shp<-shp[substr(shp$GEOID,1,2) %in% fips_codes[fips_codes$state %in% state.abb,]$state_code,]#this broke in revision, should return only states listed
+    }
     if(geography=="state"){
       #shp<-states(year=year)#ignores state argument
     }
@@ -105,50 +108,87 @@ flat_map<-function(data=NULL,#should be a data.frame with a valid geoid for fips
 }
 
 #the loadSHP function should streamline this a bit----
-loadSHP<-function(state=NULL,geography="tract",year="2020",outdir=NULL,destfile=NULL){
-  year<-ifelse(as.numeric(year)<2020,2019,2023)
-  if(is.null(state)){#if whole nation, only retrieve .shp for state/county
-    if(geography=="state"){#for state
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/STATE/tl_",year,"_us_state.zip")
-      url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,".zip")
+loadSHP<-function(state=NULL,geography="tract",year="2020",outdir="./",destfile="temp.rds"){
+  y<-ifelse(as.numeric(year)<2020,2019,2023)
+  g<-geography
+  if(length(state)>1&!is.null(state)){
+    out<-NULL
+    for(s in state){
+      st<-tigris::fips_codes
+      st<-st[st$state==state,]$state_code[[1]]#converts state abbreviation to fips code
+      if(geography=="county"){#still pulls everything if county, which should not be an issue
+        #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/COUNTY/tl_",year,"_us_county.zip")
+        url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,"_",s,".rds")
+      }
+      if(geography=="zcta5"){
+        #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/ZCTA510/tl_",year,"_us_zcta510.zip")
+        url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/zcta/","tl_",y,"_us_zcta_",s,".rds")
+      }
+      if(geography=="tract"){#still pulls everything if zip, which should not be an issue
+        #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/TRACT/tl_",year,"_",st,"_tract.zip")
+        url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,"_",s,".rds")
+      }
+      if(geography=="bg"){
+        #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/BG/tl_",year,"_",st,"_bg.zip")
+        url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,"_",s,".rds")
+      }
+      download.file(url=url,destfile=destfile)#this retrieves from github
+      shp<-readRDS(destfile)
+      file.remove(paste0(outdir,"temp.rds"))
+      out<-rbind(out,shp)
     }
-    if(geography=="county"){
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/COUNTY/tl_",year,"_us_county.zip")
-      url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,".zip")
-    }
-    if(geography=="zcta5"){
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/ZCTA510/tl_",year,"_us_zcta510.zip")
-      url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/zcta/","tl_",y,"_us_zcta.zip")
-    }
-    
-  }else{#if state was specified, retrieve only for that area
-    st<-tigris::fips_codes
-    st<-st[st$state==state,]$state_code[[1]]#converts state abbreviation to fips code
-    if(geography=="county"){#still pulls everything if county, which should not be an issue
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/COUNTY/tl_",year,"_us_county.zip")
-      url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,"_",s,".zip")
-    }
-    if(geography=="zcta5"){
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/ZCTA510/tl_",year,"_us_zcta510.zip")
-      url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/zcta/","tl_",y,"_us_zcta_",s,".zip")
-    }
-    if(geography=="tract"){#still pulls everything if zip, which should not be an issue
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/TRACT/tl_",year,"_",st,"_tract.zip")
-      url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,"_",s,".zip")
-    }
-    if(geography=="bg"){
-      #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/BG/tl_",year,"_",st,"_bg.zip")
-      url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,"_",s,".zip")
+    shp<-out
+  }else{
+    if(is.null(state)){#if whole nation, only retrieve .shp for state/county
+      if(geography=="state"){#for state
+        #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/STATE/tl_",year,"_us_state.zip")
+        url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,".rds")
+      }
+      if(geography=="county"){
+        #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/COUNTY/tl_",year,"_us_county.zip")
+        url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,".rds")
+      }
+      if(geography=="zcta5"){
+        #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/ZCTA510/tl_",year,"_us_zcta510.zip")
+        url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/zcta/","tl_",y,"_us_zcta.rds")
+      }
+      download.file(url=url,destfile=destfile)#this retrieves from github
+      shp<-readRDS(destfile)
+      file.remove(paste0(outdir,"temp.rds"))
+      
+    }else{#if state was specified, retrieve only for that area
+      s<-state
+      st<-tigris::fips_codes
+      st<-st[st$state==state,]$state_code[[1]]#converts state abbreviation to fips code
+      if(geography=="county"){#still pulls everything if county, which should not be an issue
+        #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/COUNTY/tl_",year,"_us_county.zip")
+        url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,"_",s,".rds")
+      }
+      if(geography=="zcta5"){
+        #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/ZCTA510/tl_",year,"_us_zcta510.zip")
+        url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/zcta/","tl_",y,"_us_zcta_",s,".rds")
+      }
+      if(geography=="tract"){#still pulls everything if zip, which should not be an issue
+        #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/TRACT/tl_",year,"_",st,"_tract.zip")
+        url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,"_",s,".rds")
+      }
+      if(geography=="bg"){
+        #url<-paste0("https://www2.census.gov/geo/tiger/TIGER",year,"/BG/tl_",year,"_",st,"_bg.zip")
+        url<-paste0("https://raw.githubusercontent.com/grimnr14/shpfiles/refs/heads/main/",y,"/",g,"/","tl_",y,"_us_",g,"_",s,".rds")
+      }
+      download.file(url=url,destfile=destfile)#this retrieves from github
+      shp<-readRDS(destfile)
+      file.remove(paste0(outdir,"temp.rds"))
+      
     }
   }
-  
-  download.file(url=url,destfile=destfile)#this retrieves from Census
-  shp<-readRDS(destfile)
   #unzip(zipfile=destfile,exdir=outdir)#unzip to new output directory
   #shp_files<-dir(outdir)[substr(dir(outdir),nchar(dir(outdir))-3,nchar(dir(outdir)))==".shp"]
   #shp_files<-shp_files[str_detect(url,substr(shp_files,1,nchar(shp_files)-4))]
   #shp<-st_read(dsn=paste0(outdir,paste0("\\",shp_files)))#then load directly as shp assuming only 1 file matches
+  #download.file(url=url,destfile=destfile)#this retrieves from Census
+  #st_read(destfile)
   #file.remove(paste0(outdir,dir(outdir)[str_detect(dir(outdir),substr(shp_files,1,nchar(shp_files)-4))]))
-  file.remove(paste0(outdir,"temp.zip"))
+  
   shp
 }
