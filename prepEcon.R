@@ -374,9 +374,10 @@ prepEconomic<-function(year=2022,geography="county"){
         
         es<-merge(es,map[,c("GEOID","ZCTA5")],by.x="tract",by.y="GEOID")
         es<-es[!duplicated(es)&!is.na(es$ZCTA5),]
-        es<-es[,!names(es) %in% c("GEOID","tract")]%>%
-          group_by(ZCTA5)%>%
-          summarise_each(funs=c(sum))
+        es<-as.data.frame(aggregate(data=es[,!names(es) %in% c("GEOID","tract")],.~ZCTA5,FUN="sum"))
+        #es<-es[,!names(es) %in% c("GEOID","tract")]%>%
+        #  group_by(ZCTA5)%>%
+        #  summarise_each(funs=c(sum))
         
       }else{
         map<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_zcta520_tract20_natl.txt"),header=T,sep="|")
@@ -385,9 +386,10 @@ prepEconomic<-function(year=2022,geography="county"){
         
         es<-merge(es,map[,c("GEOID","ZCTA5")],by.x="tract",by.y="GEOID")
         es<-es[!duplicated(es)&!is.na(es$ZCTA5)&es$ZCTA5!="",]
-        es<-es[,!names(es) %in% c("GEOID","tract")]%>%
-          group_by(ZCTA5)%>%
-          summarise_each(funs=c(sum))
+        es<-as.data.frame(aggregate(data=es[,!names(es) %in% c("GEOID","tract")],.~ZCTA5,FUN="sum"))
+        #es<-es[,!names(es) %in% c("GEOID","tract")]%>%
+        #  group_by(ZCTA5)%>%
+        #  summarise_each(funs=c(sum))
       }
       es$geography<-es$ZCTA5
     }
@@ -406,9 +408,11 @@ prepEconomic<-function(year=2022,geography="county"){
     vars<-c("C000","CA01","CA02","CA03","CFA01","CFA02","CFA03","CFA04","CFS01","CFS02","CFS03","CFS04","SI01","SI02","SI03","CE01","CE02","CE03")
     es$geography<-substr(es$geography,1,5)
     es[is.na(es)]<-0
-    es<-es[,c("geography",vars)]%>%
-      group_by(geography)%>%
-      summarise_each(funs=c(sum))
+    es<-as.data.frame(aggregate(data=es[,c("geography",vars)],.~geography,FUN="sum"))
+    
+    #es<-es[,c("geography",vars)]%>%
+    #  group_by(geography)%>%
+    #  summarise_each(funs=c(sum))
     es<-as.data.frame(es)
     #    for(i in vars){
     #      e<-geo_impute(x=lodes[,c("geoid",i)],geoid="geoid",from="tract",to="county",type="count",year=ifelse(year>2019,2020,2019))
@@ -427,9 +431,10 @@ prepEconomic<-function(year=2022,geography="county"){
       es<-merge(lodes,map[,c("GEOID","ZCTA5")],by.x="geoid",by.y="GEOID")
       es<-es[!duplicated(es)&!is.na(es$ZCTA5),]
       es[is.na(es)]<-0
-      es<-es[,!names(es) %in% c("GEOID","geoid","geography","year","state")]%>%
-        group_by(ZCTA5)%>%
-        summarise_each(funs=c(sum))
+      es<-as.data.frame(aggregate(data=es[,!names(es) %in% c("GEOID","geoid","geography","year","state")],.~ZCTA5,FUN="sum"))
+      #es<-es[,!names(es) %in% c("GEOID","geoid","geography","year","state")]%>%
+      #  group_by(ZCTA5)%>%
+      #  summarise_each(funs=c(sum))
       
     }else{
       map<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_zcta520_tract20_natl.txt"),header=T,sep="|")
@@ -438,9 +443,10 @@ prepEconomic<-function(year=2022,geography="county"){
       
       es<-merge(es,map[,c("GEOID","ZCTA5")],by.x="geoid",by.y="GEOID")
       es<-es[!duplicated(es)&!is.na(es$ZCTA5)&es$ZCTA5!="",]
-      es<-es[,!names(es) %in% c("GEOID","geoid","geography","year","state")]%>%
-        group_by(ZCTA5)%>%
-        summarise_each(funs=c(sum))
+      es<-as.data.frame(aggregate(data=es[,!names(es) %in% c("GEOID","geoid","geography","year","state")],.~ZCTA5,FUN="sum"))
+      #es<-es[,!names(es) %in% c("GEOID","geoid","geography","year","state")]%>%
+      #  group_by(ZCTA5)%>%
+      #  summarise_each(funs=c(sum))
     }
     es$geography<-es$ZCTA5
     es<-es[,!names(es) %in% c("ZCTA5")]
