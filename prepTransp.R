@@ -63,14 +63,16 @@ prepTransportation<-function(year=2023,geography="county"
               "passengers_per_hour"
               )]
   ex<-ntd[,c("geoid","per_facilities_prior1980","per_facilities_prior2000")]
-  ex<-ex%>%
-    group_by(geoid)%>%
-    summarise_each(funs=c("max"))
+#  ex<-ex%>%
+#    group_by(geoid)%>%
+#    summarise_each(funs=c("max"))
+  ex<-as.data.frame(aggregate(data=ex,.~geoid,FUN="max"))
   ntd<-ntd[,!names(ntd) %in% c("per_facilities_prior1980","per_facilities_prior2000")]
   ntd<-ntd[!duplicated(ntd)&!is.na(ntd$geoid),]#exclude entries that are exact duplicates
-  ntd<-ntd%>%
-    group_by(geoid)%>%
-    summarise_each(funs=c("sum"))
+#  ntd<-ntd%>%
+#    group_by(geoid)%>%
+#    summarise_each(funs=c("sum"))
+  ntd<-as.data.frame(aggregate(data=ntd,.~geoid,FUN="sum"))
   ntd<-merge(ntd,ex,by="geoid")
   ntd<-ntd[!duplicated(ntd),]
   
@@ -83,9 +85,10 @@ prepTransportation<-function(year=2023,geography="county"
   fars$driver_intox<-ifelse((fars$driver_bac>80&!is.na(fars$driver_bac))|
                               (fars$driver_drug_detect==1&!is.na(fars$driver_drug_detect)),1,0)
   
-  fars<-fars[,c("geoid","FATALS","PEDS","TractorTrailor","driver_intox")]%>%
-    group_by(geoid)%>%
-    summarise_each(funs=c("sum"))#sum across incidents
+#  fars<-fars[,c("geoid","FATALS","PEDS","TractorTrailor","driver_intox")]%>%
+#    group_by(geoid)%>%
+#    summarise_each(funs=c("sum"))#sum across incidents
+  fars<-as.data.frame(aggregate(data=fars[,c("geoid","FATALS","PEDS","TractorTrailor","driver_intox")],.~geoid,FUN="sum"))
   transp<-merge(ntd,fars,by="geoid",all=T)
   remove(fars,ntd)
   gc()

@@ -111,9 +111,11 @@ prepFood<-function(year=2019,geography="county"#,
     fara[is.na(fara)]<-0
     fara[!duplicated(fara),]
     fara<-as.data.frame(fara)
-    fara<-fara%>%
-      group_by(CensusTract)%>%
-      summarise_each(funs="sum")
+#    fara<-fara%>%
+#      group_by(CensusTract)%>%
+#      summarise_each(funs="sum")
+    fara<-as.data.frame(aggregate(data=fara,.~CensusTract,FUN="sum"))
+    
   }
   if(geography=="zcta"){
     fara<-merge(fara,map1,by.x="CensusTract",by.y="GEOID",all.x=T)
@@ -123,9 +125,11 @@ prepFood<-function(year=2019,geography="county"#,
     fara<-fara[,!names(fara) %in% c("ZCTA")]
     fara[is.na(fara)]<-0
     fara<-as.data.frame(fara)
-    fara<-fara%>%
-      group_by(CensusTract)%>%
-      summarise_each(funs="sum")
+#    fara<-fara%>%
+#      group_by(CensusTract)%>%
+#      summarise_each(funs="sum")
+    fara<-as.data.frame(aggregate(data=fara,.~CensusTract,FUN="sum"))
+    
   }
   fara[is.na(fara)]<-0
   fara[!duplicated(fara),]
@@ -188,9 +192,10 @@ prepFood<-function(year=2019,geography="county"#,
     fea$GEOID<-fea$tract
   }
   fea<-fea[,!names(fea) %in% c("FIPS","ZCTA","State","County")]
-  fea<-fea%>%
-    group_by(GEOID)%>%
-    summarise_each(funs=c("max"))
+#  fea<-fea%>%
+#    group_by(GEOID)%>%
+#    summarise_each(funs=c("max"))
+  fea<-as.data.frame(aggregate(data=fea,.~GEOID,FUN="max"))
   fea<-as.data.frame(fea)
   food<-merge(fea,fara,by.x="GEOID",by.y="CensusTract",all=T)#note censustract is really the same level as geoid at this point
   remove(fea,fara)

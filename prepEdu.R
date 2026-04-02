@@ -3,56 +3,56 @@ library(tigris)
 library(dplyr)
 
 geo_impute<-function(x,geoid="geoid",from,to,type="percent",year=2019){#requires fips coding
-  ipums.key<-"59cba10d8a5da536fc06b59d66e936288d8a4d7eb286182ea94a5c84"
-  set_ipums_api_key(api_key=ipums.key)
+  #  ipums.key<-"59cba10d8a5da536fc06b59d66e936288d8a4d7eb286182ea94a5c84"
+  #  set_ipums_api_key(api_key=ipums.key)
   #hierarchy----
   hierarchy<-factor(c("county","tract","bg"),ordered=T,levels=rev(c("county","tract","bg")))
   #load geographies from ipumsr #tigris----
   geos<-c(from,to)
   geos<-ifelse(geos=="block group","blck_grp",
                ifelse(geos=="zip code tabulation area","zcta",geos))
-  files<-get_metadata_nhgis('shapefiles',api_key=ipums.key)
-  files<-files[files$year==year&
-                 (str_detect(files$name,paste0("us_",geos[1]))|
-                    str_detect(files$name,paste0("us_",geos[2]))),]$name
+  #  files<-get_metadata_nhgis('shapefiles',api_key=ipums.key)
+  #  files<-files[files$year==year&
+  #                 (str_detect(files$name,paste0("us_",geos[1]))|
+  #                    str_detect(files$name,paste0("us_",geos[2]))),]$name
   
   if("county" %in% geos){
-    #county<-tigris::counties(year=year)
-    extract<-ipumsr::define_extract_nhgis(description=paste0("county_shp_",year),
-                                          shapefiles=paste0("us_county_",year,"_tl",year))
-    sf<-download_extract(wait_for_extract(submit_extract(extract)))
-    county<-read_ipums_sf(sf)
-    file.remove(sf)
-    remove(sf)
+    county<-tigris::counties(year=year)
+    #    extract<-ipumsr::define_extract_nhgis(description=paste0("county_shp_",year),
+    #                                          shapefiles=paste0("us_county_",year,"_tl",year))
+    #    sf<-download_extract(wait_for_extract(submit_extract(extract)))
+    #    county<-read_ipums_sf(sf)
+    #    file.remove(sf)
+    #    remove(sf)
     gc()
     
   }
   if("tract" %in% geos){
-    #tract<-NULL
-    #for(i in state.abb){
-    #  out<-as.data.frame(tigris::tracts(state=i,year=year,resolution="500k"))[,c("STATEFP","GEOID")]
-    #  tract<-rbind(tract,out)
-    #}
-    extract<-ipumsr::define_extract_nhgis(description=paste0("tract_shp_",year),
-                                          shapefiles=paste0("us_tract_",year,"_tl",year))
-    sf<-download_extract(wait_for_extract(submit_extract(extract)))
-    tract<-read_ipums_sf(sf)
-    file.remove(sf)
-    remove(sf)
+    tract<-NULL
+    for(i in state.abb){
+      out<-as.data.frame(tigris::tracts(state=i,year=year,resolution="500k"))[,c("STATEFP","GEOID")]
+      tract<-rbind(tract,out)
+    }
+    #    extract<-ipumsr::define_extract_nhgis(description=paste0("tract_shp_",year),
+    #                                          shapefiles=paste0("us_tract_",year,"_tl",year))
+    #    sf<-download_extract(wait_for_extract(submit_extract(extract)))
+    #    tract<-read_ipums_sf(sf)
+    #    file.remove(sf)
+    #    remove(sf)
     gc()
   }
   if("bg" %in% geos){
-    #bg<-NULL
-    #for(i in state.abb){
-    #  out<-as.data.frame(tigris::block_groups(state=i,year=year))[,c("STATEFP","GEOID")]
-    #  bg<-rbind(bg,out)
-    #}
-    extract<-ipumsr::define_extract_nhgis(description=paste0("blck_grp_shp_",year),
-                                          shapefiles=paste0("us_blck_grp_",year,"_tl",year))
-    sf<-download_extract(wait_for_extract(submit_extract(extract)))
-    bg<-read_ipums_sf(sf)
-    file.remove(sf)
-    remove(sf)
+    bg<-NULL
+    for(i in state.abb){
+      out<-as.data.frame(tigris::block_groups(state=i,year=year))[,c("STATEFP","GEOID")]
+      bg<-rbind(bg,out)
+    }
+    #    extract<-ipumsr::define_extract_nhgis(description=paste0("blck_grp_shp_",year),
+    #                                          shapefiles=paste0("us_blck_grp_",year,"_tl",year))
+    #    sf<-download_extract(wait_for_extract(submit_extract(extract)))
+    #    bg<-read_ipums_sf(sf)
+    #    file.remove(sf)
+    #    remove(sf)
     gc()
   }
   #create spine on from data----
@@ -232,13 +232,15 @@ prepEducation<-function(year=2023,geography="county"){
   if(geography=="county"){
     bg$fips<-substr(bg$fips,1,5)
   }
-  bg<-bg[!duplicated(bg)&!is.na(bg$fips),]%>%
-    group_by(fips)%>%
-    summarise_each(funs=c("sum"))
+#  bg<-bg[!duplicated(bg)&!is.na(bg$fips),]%>%
+#    group_by(fips)%>%
+#    summarise_each(funs=c("sum"))
+  bg<-as.data.frame(aggregate(data=bg[!duplicated(bg)&!is.na(bg$fips),],.~fips,FUN="sum"))
   ccd<-plyr::rbind.fill(bg,ct)
-  ccd<-ccd[!duplicated(ccd)&!is.na(ccd$fips),]%>%
-    group_by(fips)%>%
-    summarise_each(funs=c("sum"))
+#  ccd<-ccd[!duplicated(ccd)&!is.na(ccd$fips),]%>%
+#    group_by(fips)%>%
+#    summarise_each(funs=c("sum"))
+  ccd<-as.data.frame(aggregate(data=ccd[!duplicated(ccd)&!is.na(ccd$fips),],.~fips,FUN="sum"))
   ccd[is.na(ccd)]<-0
   names(ccd)<-c("GEOID",names(ccd)[2:ncol(ccd)])
   ccd<-as.data.frame(ccd)
@@ -274,13 +276,14 @@ prepEducation<-function(year=2023,geography="county"){
                                                        "ft_noninst_academic_staff",
                                                        "ft_community_admin_staff","total_instructional_staff","total_inst_staff_salary","no_reported_inst_staff")]
   ipedsSum[is.na(ipedsSum)]<-0
-  ipedsSum<-ipedsSum%>%group_by(fips)%>%summarise_each(funs=c("sum"))
-  
+  #ipedsSum<-ipedsSum%>%group_by(fips)%>%summarise_each(funs=c("sum"))
+  ipedsSum<-as.data.frame(aggregate(data=ipedsSum,.~fips,FUN="sum"))
   ipedsAvg<-ipeds[ipeds$fips!="0"&!is.na(ipeds$fips),c("fips",
                                                        "cost_grad_instate","cost_grad_outstate","cost_oncampus_living",
                                                        "cost_undergrad_instate","cost_undergrad_outstate",
                                                        "est_avg_inst_staff_salary")]
-  ipedsAvg<-ipedsAvg%>%group_by(fips)%>%summarise_each(funs=c("mean"))
+  #ipedsAvg<-ipedsAvg%>%group_by(fips)%>%summarise_each(funs=c("mean"))
+  ipedsAvg<-as.data.frame(aggregate(data=ipedsAvg,.~fips,FUN="mean"))
   ipeds<-merge(ipedsSum,ipedsAvg,by="fips",all=T)
   names(ipeds)<-c("GEOID",names(ipeds)[2:ncol(ipeds)])
   ipeds<-as.data.frame(ipeds)

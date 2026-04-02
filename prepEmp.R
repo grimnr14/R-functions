@@ -2,59 +2,59 @@
 library(stringr)
 library(dplyr)
 library(tigris)
-library(ipumsr)
+#library(ipumsr)
 
 geo_impute<-function(x,geoid="geoid",from,to,type="percent",year=2019){#requires fips coding
-  ipums.key<-"59cba10d8a5da536fc06b59d66e936288d8a4d7eb286182ea94a5c84"
-  set_ipums_api_key(api_key=ipums.key)
+  #  ipums.key<-"59cba10d8a5da536fc06b59d66e936288d8a4d7eb286182ea94a5c84"
+  #  set_ipums_api_key(api_key=ipums.key)
   #hierarchy----
   hierarchy<-factor(c("county","tract","bg"),ordered=T,levels=rev(c("county","tract","bg")))
   #load geographies from ipumsr #tigris----
   geos<-c(from,to)
   geos<-ifelse(geos=="block group","blck_grp",
                ifelse(geos=="zip code tabulation area","zcta",geos))
-  files<-get_metadata_nhgis('shapefiles',api_key=ipums.key)
-  files<-files[files$year==year&
-                 (str_detect(files$name,paste0("us_",geos[1]))|
-                    str_detect(files$name,paste0("us_",geos[2]))),]$name
+  #  files<-get_metadata_nhgis('shapefiles',api_key=ipums.key)
+  #  files<-files[files$year==year&
+  #                 (str_detect(files$name,paste0("us_",geos[1]))|
+  #                    str_detect(files$name,paste0("us_",geos[2]))),]$name
   
   if("county" %in% geos){
-    #county<-tigris::counties(year=year)
-    extract<-ipumsr::define_extract_nhgis(description=paste0("county_shp_",year),
-                                          shapefiles=paste0("us_county_",year,"_tl",year))
-    sf<-download_extract(wait_for_extract(submit_extract(extract)))
-    county<-read_ipums_sf(sf)
-    file.remove(sf)
-    remove(sf)
+    county<-tigris::counties(year=year)
+    #    extract<-ipumsr::define_extract_nhgis(description=paste0("county_shp_",year),
+    #                                          shapefiles=paste0("us_county_",year,"_tl",year))
+    #    sf<-download_extract(wait_for_extract(submit_extract(extract)))
+    #    county<-read_ipums_sf(sf)
+    #    file.remove(sf)
+    #    remove(sf)
     gc()
     
   }
   if("tract" %in% geos){
-    #tract<-NULL
-    #for(i in state.abb){
-    #  out<-as.data.frame(tigris::tracts(state=i,year=year,resolution="500k"))[,c("STATEFP","GEOID")]
-    #  tract<-rbind(tract,out)
-    #}
-    extract<-ipumsr::define_extract_nhgis(description=paste0("tract_shp_",year),
-                                          shapefiles=paste0("us_tract_",year,"_tl",year))
-    sf<-download_extract(wait_for_extract(submit_extract(extract)))
-    tract<-read_ipums_sf(sf)
-    file.remove(sf)
-    remove(sf)
+    tract<-NULL
+    for(i in state.abb){
+      out<-as.data.frame(tigris::tracts(state=i,year=year,resolution="500k"))[,c("STATEFP","GEOID")]
+      tract<-rbind(tract,out)
+    }
+    #    extract<-ipumsr::define_extract_nhgis(description=paste0("tract_shp_",year),
+    #                                          shapefiles=paste0("us_tract_",year,"_tl",year))
+    #    sf<-download_extract(wait_for_extract(submit_extract(extract)))
+    #    tract<-read_ipums_sf(sf)
+    #    file.remove(sf)
+    #    remove(sf)
     gc()
   }
   if("bg" %in% geos){
-    #bg<-NULL
-    #for(i in state.abb){
-    #  out<-as.data.frame(tigris::block_groups(state=i,year=year))[,c("STATEFP","GEOID")]
-    #  bg<-rbind(bg,out)
-    #}
-    extract<-ipumsr::define_extract_nhgis(description=paste0("blck_grp_shp_",year),
-                                          shapefiles=paste0("us_blck_grp_",year,"_tl",year))
-    sf<-download_extract(wait_for_extract(submit_extract(extract)))
-    bg<-read_ipums_sf(sf)
-    file.remove(sf)
-    remove(sf)
+    bg<-NULL
+    for(i in state.abb){
+      out<-as.data.frame(tigris::block_groups(state=i,year=year))[,c("STATEFP","GEOID")]
+      bg<-rbind(bg,out)
+    }
+    #    extract<-ipumsr::define_extract_nhgis(description=paste0("blck_grp_shp_",year),
+    #                                          shapefiles=paste0("us_blck_grp_",year,"_tl",year))
+    #    sf<-download_extract(wait_for_extract(submit_extract(extract)))
+    #    bg<-read_ipums_sf(sf)
+    #    file.remove(sf)
+    #    remove(sf)
     gc()
   }
   #create spine on from data----
