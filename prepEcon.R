@@ -1,30 +1,18 @@
 library(stringr)
 library(tigris)
 library(tidyr)
-#library(ipumsr)
 
 geo_impute<-function(x,geoid="geoid",from,to,type="percent",year=2019){#requires fips coding
-  #  ipums.key<-"59cba10d8a5da536fc06b59d66e936288d8a4d7eb286182ea94a5c84"
-  #  set_ipums_api_key(api_key=ipums.key)
   #hierarchy----
   hierarchy<-factor(c("county","tract","bg"),ordered=T,levels=rev(c("county","tract","bg")))
+  
   #load geographies from ipumsr #tigris----
   geos<-c(from,to)
   geos<-ifelse(geos=="block group","blck_grp",
                ifelse(geos=="zip code tabulation area","zcta",geos))
-  #  files<-get_metadata_nhgis('shapefiles',api_key=ipums.key)
-  #  files<-files[files$year==year&
-  #                 (str_detect(files$name,paste0("us_",geos[1]))|
-  #                    str_detect(files$name,paste0("us_",geos[2]))),]$name
   
   if("county" %in% geos){
     county<-tigris::counties(year=year)
-    #    extract<-ipumsr::define_extract_nhgis(description=paste0("county_shp_",year),
-    #                                          shapefiles=paste0("us_county_",year,"_tl",year))
-    #    sf<-download_extract(wait_for_extract(submit_extract(extract)))
-    #    county<-read_ipums_sf(sf)
-    #    file.remove(sf)
-    #    remove(sf)
     gc()
     
   }
@@ -34,12 +22,6 @@ geo_impute<-function(x,geoid="geoid",from,to,type="percent",year=2019){#requires
       out<-as.data.frame(tigris::tracts(state=i,year=year,resolution="500k"))[,c("STATEFP","GEOID")]
       tract<-rbind(tract,out)
     }
-    #    extract<-ipumsr::define_extract_nhgis(description=paste0("tract_shp_",year),
-    #                                          shapefiles=paste0("us_tract_",year,"_tl",year))
-    #    sf<-download_extract(wait_for_extract(submit_extract(extract)))
-#    tract<-read_ipums_sf(sf)
-    #    file.remove(sf)
-    #    remove(sf)
     gc()
   }
   if("bg" %in% geos){
@@ -48,12 +30,6 @@ geo_impute<-function(x,geoid="geoid",from,to,type="percent",year=2019){#requires
       out<-as.data.frame(tigris::block_groups(state=i,year=year))[,c("STATEFP","GEOID")]
       bg<-rbind(bg,out)
     }
-    #    extract<-ipumsr::define_extract_nhgis(description=paste0("blck_grp_shp_",year),
-    #                                          shapefiles=paste0("us_blck_grp_",year,"_tl",year))
-    #    sf<-download_extract(wait_for_extract(submit_extract(extract)))
-    #    bg<-read_ipums_sf(sf)
-    #    file.remove(sf)
-    #    remove(sf)
     gc()
   }
   #create spine on from data----
@@ -93,21 +69,18 @@ geo_impute<-function(x,geoid="geoid",from,to,type="percent",year=2019){#requires
     bg$GEOID<-substr(bg$GEOID,1,11)
     bg<-merge(bg,tract[,"GEOID"],by="GEOID",all.x=T)
     out<-bg[,!names(bg) %in% c("geometry","STATEFP","GEOID")]
-    
   }
   if(from=="bg"&to=="county"){
     bg$bg<-bg$GEOID
     bg$GEOID<-substr(bg$GEOID,1,5)
     bg<-merge(bg,county[,"GEOID"],by="GEOID",all.x=T)
     out<-bg[,!names(bg) %in% c("geometry","STATEFP","GEOID")]
-    
   }
   if(from=="tract"&to=="county"){
     tract$tract<-tract$GEOID
     tract$GEOID<-substr(tract$GEOID,1,5)
     tract<-merge(tract,county[,c("GEOID")],by="GEOID",all.x=T)
     out<-tract[,!names(tract) %in% c("geometry","STATEFP","GEOID")]
-    
   }
   
   if(type=="percent"|type=="rate"){#if percent going up average, going down impute
@@ -135,9 +108,7 @@ geo_impute<-function(x,geoid="geoid",from,to,type="percent",year=2019){#requires
       out<-out[!is.na(out[,to])&!is.na(out[,names(x)[!names(x) %in% geoid]]),]
       out[,names(x)[!names(x) %in% geoid]]<-as.numeric(out[,names(x)[!names(x) %in% geoid]])/out$val
       out<-out[,c(names(x)[!names(x) %in% geoid],to)]
-      #      names(out)<-c(names(x)[!names(x) %in% geoid],to)
       out<-out[!duplicated(out),]
-      
     }else{#going up
       span<-ifelse(to=="county",5,
                    ifelse(to=="tract",11,
@@ -147,7 +118,6 @@ geo_impute<-function(x,geoid="geoid",from,to,type="percent",year=2019){#requires
       m<-aggregate(data=out,formula(paste0(names(x)[!names(x) %in% "geoid"],"~",from)),FUN="sum")
       out<-m
     }
-    
   }
   if(type=="binary"){#if binary going up mode, going down impute binary value
     if(hierarchy[hierarchy==from]>hierarchy[hierarchy==to]){#going down
@@ -162,12 +132,9 @@ geo_impute<-function(x,geoid="geoid",from,to,type="percent",year=2019){#requires
       m[,names(x)[!names(x) %in% "geoid"]]<-ifelse(m[,names(x)[!names(x) %in% "geoid"]]>0.5,1,0)
       out<-m
     }
-    
   }
-  
   out
 }
-
 
 prepEconomic<-function(year=2022,geography="county"){
   out<-fips_codes
@@ -248,14 +215,7 @@ prepEconomic<-function(year=2022,geography="county"){
   gdp<-spread(gdp[,names(gdp)[!names(gdp) %in% c("CL_UNIT")]],key=key,value=value,fill=0)
   names(gdp)<-c("GeoFips","year","summary.gdp","county.perchangegdp","county.gdp","chained.quantity.index","county.realgdp","personalincome.percapita")
   out<-merge(out,gdp,by.x="fips",by.y="GeoFips",all.x=T)
-  
-  #cagdp1 county gdp summary
-  #cagdp11 contributions to percent change in real gdp
-  #cagdp2 gdp by county
-  #cagdp9 real gdp by county
-  #cagdp8 chain type quantity indexes for real gdp by county
-  #cainc1 personal income summary per capita personal income
-  
+
   pce<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/state%20level%20regional%20pce.csv"),header=T)
   pce<-pce[,c("Code","GeoFips","year","CL_UNIT","table",names(pce)[str_detect(names(pce),as.character(year))])]
   pce<-pce[!duplicated(pce)&pce$GeoFips!=0&pce$year==year,]
@@ -289,21 +249,7 @@ prepEconomic<-function(year=2022,geography="county"){
   }
   pce$realPersonalResidual<-pce$`R-PI`-pce$`R-PCE`#county level left over income after pce
   out<-merge(out,pce,by.x=c("fips","state_code"),by.y=c("GEOID","fips"),all.x=T)
-  
-  #SAPCE1 personal consumption expenditures by major type of product
-  #SAPCE2 per capita pce by type
-  #SAPCE3 pce by state by type
-  #SARPI regional price index relative to us as a whole
-  #SARPP 
-  
-#  qtax<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/qtax%20county%20level.csv"),header=T)
-#  qtax<-qtax[,c("state","GEO_LEVEL_CODE","CATEGORY_CODE","CELL_VALUE","DATA_TYPE_CODE","TIME_SLOT_DATE")]
-#  qtax$year<-substr(qtax$TIME_SLOT_DATE,1,4)
-#  qtax<-qtax[qtax$DATA_TYPE_CODE=="T40",]
-#  qtax$state<-str_pad(qtax$state,width=2,side="left",pad="0")
-#  qtax<-aggregate(data=qtax,CELL_VALUE~state+GEO_LEVEL_CODE+year,FUN="sum")
-#  summary(as.factor(qtax$GEO_LEVEL_CODE))
-  
+
   if(year>=2020){
     stc<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/FY",year,"-STC-Category-Table-Transposed.csv"),header=T,skip=4)
   }else{
@@ -375,10 +321,6 @@ prepEconomic<-function(year=2022,geography="county"){
         es<-merge(es,map[,c("GEOID","ZCTA5")],by.x="tract",by.y="GEOID")
         es<-es[!duplicated(es)&!is.na(es$ZCTA5),]
         es<-as.data.frame(aggregate(data=es[,!names(es) %in% c("GEOID","tract")],.~ZCTA5,FUN="sum"))
-        #es<-es[,!names(es) %in% c("GEOID","tract")]%>%
-        #  group_by(ZCTA5)%>%
-        #  summarise_each(funs=c(sum))
-        
       }else{
         map<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_zcta520_tract20_natl.txt"),header=T,sep="|")
         map$GEOID<-str_pad(map$GEOID_TRACT_20,width=11,side="left",pad="0")
@@ -387,9 +329,6 @@ prepEconomic<-function(year=2022,geography="county"){
         es<-merge(es,map[,c("GEOID","ZCTA5")],by.x="tract",by.y="GEOID")
         es<-es[!duplicated(es)&!is.na(es$ZCTA5)&es$ZCTA5!="",]
         es<-as.data.frame(aggregate(data=es[,!names(es) %in% c("GEOID","tract")],.~ZCTA5,FUN="sum"))
-        #es<-es[,!names(es) %in% c("GEOID","tract")]%>%
-        #  group_by(ZCTA5)%>%
-        #  summarise_each(funs=c(sum))
       }
       es$geography<-es$ZCTA5
     }
@@ -409,18 +348,7 @@ prepEconomic<-function(year=2022,geography="county"){
     es$geography<-substr(es$geography,1,5)
     es[is.na(es)]<-0
     es<-as.data.frame(aggregate(data=es[,c("geography",vars)],.~geography,FUN="sum"))
-    
-    #es<-es[,c("geography",vars)]%>%
-    #  group_by(geography)%>%
-    #  summarise_each(funs=c(sum))
     es<-as.data.frame(es)
-    #    for(i in vars){
-    #      e<-geo_impute(x=lodes[,c("geoid",i)],geoid="geoid",from="tract",to="county",type="count",year=ifelse(year>2019,2020,2019))
-    #      es<-merge(es,e,by="tract",all=T)
-    #    }
-    
-    #    es$geography<-es$tract
-    #    es<-es[!is.na(es$tract),]
   }
   if(geography=="zcta"){
     if(y<2020){
@@ -432,10 +360,6 @@ prepEconomic<-function(year=2022,geography="county"){
       es<-es[!duplicated(es)&!is.na(es$ZCTA5),]
       es[is.na(es)]<-0
       es<-as.data.frame(aggregate(data=es[,!names(es) %in% c("GEOID","geoid","geography","year","state")],.~ZCTA5,FUN="sum"))
-      #es<-es[,!names(es) %in% c("GEOID","geoid","geography","year","state")]%>%
-      #  group_by(ZCTA5)%>%
-      #  summarise_each(funs=c(sum))
-      
     }else{
       map<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_zcta520_tract20_natl.txt"),header=T,sep="|")
       map$GEOID<-str_pad(map$GEOID_TRACT_20,width=11,side="left",pad="0")
@@ -444,9 +368,6 @@ prepEconomic<-function(year=2022,geography="county"){
       es<-merge(es,map[,c("GEOID","ZCTA5")],by.x="geoid",by.y="GEOID")
       es<-es[!duplicated(es)&!is.na(es$ZCTA5)&es$ZCTA5!="",]
       es<-as.data.frame(aggregate(data=es[,!names(es) %in% c("GEOID","geoid","geography","year","state")],.~ZCTA5,FUN="sum"))
-      #es<-es[,!names(es) %in% c("GEOID","geoid","geography","year","state")]%>%
-      #  group_by(ZCTA5)%>%
-      #  summarise_each(funs=c(sum))
     }
     es$geography<-es$ZCTA5
     es<-es[,!names(es) %in% c("ZCTA5")]
@@ -463,8 +384,7 @@ prepEconomic<-function(year=2022,geography="county"){
   remove(qwi)
   gc()
   
-#merge----  
-  
+  #merge----  
   county.cnts<-c("summary.gdp","county.gdp","county.realgdp",
                  "total_All","total_Goods","total_HealthCare","total_NonDurableGoods","total_Services",
                  "ind_total_All","ind_total_Goods","ind_total_HealthCare","ind_total_NonDurableGoods","ind_total_Services",
