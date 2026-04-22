@@ -263,12 +263,12 @@ prepEconomic<-function(year=2022,geography="county"){
   stc$fips<-fips_codes[!duplicated(fips_codes[,c("state","state_code")]),]$state_code[1:51]
   stc$fips<-ifelse(stc$abb=="DC","11",ifelse(stc$abb=="DE","10",stc$fips))
   stc<-merge(stc,pop[,c("state","GEOID","statepop","B01001_001")],by.x="fips",by.y="state",all.x=T)
-  stc$IncomeTax<-(as.numeric(stc$`Income Taxes`)/stc$statepop)*stc$B01001_001
-  stc$LicenseTax<-(as.numeric(stc$`License Taxes`)/stc$statepop)*stc$B01001_001
-  stc$OtherTax<-(as.numeric(stc$`Other Taxes`)/stc$statepop)*stc$B01001_001
-  stc$PropertyTax<-(as.numeric(stc$`Property Taxes`)/stc$statepop)*stc$B01001_001
-  stc$SalesReceiptsTax<-(as.numeric(stc$`Sales and Gross Receipts Taxes`)/stc$statepop)*stc$B01001_001
-  stc$TotalTax<-(as.numeric(stc$`Total Taxes`)/stc$statepop)*stc$B01001_001
+  stc$IncomeTax<-(as.numeric(stc$`Income Taxes`)/stc$statepop)
+  stc$LicenseTax<-(as.numeric(stc$`License Taxes`)/stc$statepop)
+  stc$OtherTax<-(as.numeric(stc$`Other Taxes`)/stc$statepop)
+  stc$PropertyTax<-(as.numeric(stc$`Property Taxes`)/stc$statepop)
+  stc$SalesReceiptsTax<-(as.numeric(stc$`Sales and Gross Receipts Taxes`)/stc$statepop)
+  stc$TotalTax<-(as.numeric(stc$`Total Taxes`)/stc$statepop)
   out<-merge(out,stc,by.x=c("state","fips"),by.y=c("abb","GEOID"),all.x=T)
   
   debt<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/State_Debt_tables_dy",year,".csv"),header=T,skip=3)
