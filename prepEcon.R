@@ -388,8 +388,8 @@ prepEconomic<-function(year=2022,geography="county"){
   county.cnts<-c("summary.gdp","county.gdp","county.realgdp",
                  "total_All","total_Goods","total_HealthCare","total_NonDurableGoods","total_Services",
                  "ind_total_All","ind_total_Goods","ind_total_HealthCare","ind_total_NonDurableGoods","ind_total_Services",
-                 "R-PCE","R-PI","realPersonalResidual",
-                 "IncomeTax","LicenseTax","OtherTax","PropertyTax","SalesReceiptsTax","TotalTax"
+                 "R-PCE","R-PI","realPersonalResidual"#,
+                 #"IncomeTax","LicenseTax","OtherTax","PropertyTax","SalesReceiptsTax","TotalTax"
                  )
   prcs<-c("ratioReturnsIndividuals","avgAGIperReturn","avgAGIperIndividual","avgTotalIncomeperReturn","avgTotalPaymentperReturn","avgTaxDueperReturn","avgTaxPaidperReturn","avgTaxableIncomeperReturn","avgTaxLiabilityperReturn",
           "ratioReturnsIndividuals_lt25k","avgAGIperReturn_lt25k","avgAGIperIndividual_lt25k","avgTotalIncomeperReturn_lt25k","avgTotalPaymentperReturn_lt25k","avgTaxDueperReturn_lt25k","avgTaxPaidperReturn_lt25k","avgTaxableIncomeperReturn_lt25k","avgTaxLiabilityperReturn_lt25k",
