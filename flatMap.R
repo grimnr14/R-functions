@@ -19,33 +19,33 @@ flat_map<-function(data=NULL,#should be a data.frame with a valid geoid for fips
 ){
   geography<-ifelse(geography=="zip code tabulation area","zcta",geography)
   if(is.null(shp)){#if shp is not specified, retrieve defaults from tigris
-    shp<-loadSHP(state=state,geography=geography,year=year,outdir="./",destfile="temp.rds")
+    #shp<-loadSHP(state=state,geography=geography,year=year,outdir="./",destfile="temp.rds")
     if(geography %in% c("county","tract","bg")){
       shp<-shp[substr(shp$GEOID,1,2) %in% fips_codes[fips_codes$state %in% state.abb,]$state_code,]#this broke in revision, should return only states listed
     }
     if(geography=="state"){
-      #shp<-states(year=year)#ignores state argument
+      shp<-states(year=year)#ignores state argument
     }
     if(geography=="county"){#select national counties or state specific
-      #if(is.null(state)){
-      #  shp<-counties(year=year)
-      #}else{
-      #  shp<-counties(state=state,year=year)
-      #}
+      if(is.null(state)){
+        shp<-counties(year=year)
+      }else{
+        shp<-counties(state=state,year=year)
+      }
     }
     #no choice on smaller geographies, must have a state argument
     if(geography=="zcta5"){
-      #if(is.null(state)){
-      #  shp<-zctas(year=year)
-      #}else{
-      #  shp<-zctas(state=state,year=ifelse(as.numeric(year)>=2010,2010,2000))
-      #}
+      if(is.null(state)){
+        shp<-zctas(year=year)
+      }else{
+        shp<-zctas(state=state,year=ifelse(as.numeric(year)>=2010,2010,2000))
+      }
     }
     if(geography=="tract"){
-      #shp<-tracts(state=state,year=year)#ok tigris can do it all?
+      shp<-tracts(state=state,year=year)#ok tigris can do it all?
     }
     if(geography=="bg"){
-      #shp<-block_groups(state=state,year=year)
+      shp<-block_groups(state=state,year=year)
     }
   }
   
@@ -99,12 +99,11 @@ flat_map<-function(data=NULL,#should be a data.frame with a valid geoid for fips
       tm<-tm+tmx
     }
   }
-  if(type=="leaflet"|type=="multi"){
-    tmap_leaflet(tm,show=F)
+  if(type=="leaflet"){
+    tmap_leaflet(tm,show=T)
   }else{
     tm
   }
-  #  tm
 }
 
 #the loadSHP function should streamline this a bit----
