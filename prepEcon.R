@@ -396,7 +396,7 @@ prepEconomic<-function(year=2022,geography="county"){
           "ratioReturnsIndividuals_gte200k","avgAGIperReturn_gte200k","avgAGIperIndividual_gte200k","avgTotalIncomeperReturn_gte200k","avgTotalPaymentperReturn_gte200k","avgTaxDueperReturn_gte200k","avgTaxPaidperReturn_gte200k","avgTaxableIncomeperReturn_gte200k","avgTaxLiabilityperReturn_gte200k",
           "county.perchangegdp","chained.quantity.index","personalincome.percapita",
           "per.wdebt","per.secureddebt","per.homedebt","per.vehicledebt","per.unsecureddebt","per.creditcarddebt",
-          "R-perCapPCE","R-perCapPI",
+          "R-perCapPCE","R-perCapPI"#,
           #"RPP-All","RPP-Goods"
   )
   runs<-c(names(out)[!names(out) %in% c("state","fips","county","year")])
