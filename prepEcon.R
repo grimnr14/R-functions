@@ -241,7 +241,7 @@ prepEconomic<-function(year=2022,geography="county"){
   pce$fips<-substr(pce$GeoFips,1,2)
   pce<-merge(pce,pop[,c("state","GEOID","statepop","B01001_001")],by.x="fips",by.y="state",all.x=T)
   pce$propPop<-pce$B01001_001/pce$statepop
-  for(i in c("total_All","total_Goods","total_HealthCare","total_NonDurableGoods","total_Services","ind_total_All","ind_total_Goods","ind_total_HealthCare","ind_total_NonDurableGoods","ind_total_Services","R-PCE","RPP-All","RPP-Goods","R-PI")){
+  for(i in c("total_All","total_Goods","total_HealthCare","total_NonDurableGoods","total_Services","ind_total_All","ind_total_Goods","ind_total_HealthCare","ind_total_NonDurableGoods","ind_total_Services")){#},"R-PCE","RPP-All","RPP-Goods","R-PI")){
     pce[,i]<-pce$propPop*pce[,i]#adjusts each area's pce by population, ASSUMES EQUAL CONSUMPTION PER PERSON ACROSS ALL STATE
   }
   for(i in c("R-perCapPCE","R-perCapPI","RPP-All","RPP-Goods")){
@@ -453,6 +453,7 @@ prepEconomic<-function(year=2022,geography="county"){
   
 }
 
+#ex<-prepEconomic(year=2021,geography="county")
 #ex<-prepEconomic(year=2021,geography="zcta")
 #ex<-prepEconomic(year=2019,geography="tract")
 #flat_map(ex,year=2019,state="MD",geography="tract",geoid="GEOID",var="summary.gdp",type="flat")
