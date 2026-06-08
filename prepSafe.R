@@ -144,9 +144,50 @@ prepSafety<-function(year=2022,geography="county"){
     
   }
   
+  
+  #####
+  #load wonder----
+  wonder<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/Underlying%20Cause%20of%20Death%2C%20",year,".csv"),header=T)
+  wonder$County.Code<-str_pad(wonder$County.Code,side="left",pad="0",width=5)
+  wonder<-wonder[,c("County.Code","Injury.Intent","Injury.Mechanism...All.Other.Leading.Causes","Deaths")]
+  wonder<-wonder[!duplicated(wonder)&!is.na(wonder$County.Code),]
+  wonder<-spread(data=wonder,key=Injury.Mechanism...All.Other.Leading.Causes,value=Deaths,fill=0)
+  gs<-wonder[wonder$Injury.Intent=="Homicide",c("County.Code","Firearm")]
+  homicide<-wonder[wonder$Injury.Intent=="Homicide",]
+  homicide$count<-rowSums(homicide[,c(3:ncol(homicide))])
+  homicide<-homicide[,c("County.Code","count")]
+  unintentional<-wonder[wonder$Injury.Intent=="Unintentional",c("County.Code","Poisoning")]
+  wonder<-merge(gs,homicide,by="County.Code",all=T)
+  wonder<-merge(wonder,unintentional,by="County.Code",all=T)
+  names(wonder)<-c("County.Code","firearm.death","homicide.death","unintentional.poisoning")
+  
+  if(geography=="county"){
+    out<-merge(out,wonder,by.x="geoid",by.y="County.Code",all.x=T)
+  }
+  if(geography=="zcta"){
+    wonder<-merge(wonder,map,by.x="County.Code",by.y="fips",all.x=T)
+    wonder<-wonder[,!names(wonder) %in% c("fips")]
+    wonder<-wonder[!duplicated(wonder),]
+    wonder<-aggregate(data=wonder,.~zcta+year,FUN="mean")
+    #now merge pieces----
+    out<-merge(out,wonder,by.x="geoid",by.y="zcta",all=T)
+    
+  }
+  if(geography=="tract"){
+    wonder<-merge(wonder,map,by.x="County.Code",by.y="fips",all.x=T)
+    wonder<-wonder[,!names(wonder) %in% c("fips")]
+    wonder<-wonder[!duplicated(wonder),]
+    wonder<-aggregate(data=wonder,.~tract+year,FUN="mean")
+    #now merge pieces----
+    out<-merge(out,wonder,by.x="geoid",by.y="tract",all=T)
+    
+  }
+  
+
+  
   out<-out[!duplicated(out),]
-  out<-out[,c("geoid","robbery","assault","homicide","sexoffense","violent","advocacy_civic_service_org","ambulance","bar_cafe_restaurant","business_labor_political_org","hospitals","liquor_store","mental_health_prov","park_museum_historical","religious_org","social_assist","per.elig.voted","per.registered")]
-  remove(map,vote,agencies,d,outs)
+  out<-out[,c("geoid","robbery","assault","homicide","sexoffense","violent","advocacy_civic_service_org","ambulance","bar_cafe_restaurant","business_labor_political_org","hospitals","liquor_store","mental_health_prov","park_museum_historical","religious_org","social_assist","per.elig.voted","per.registered","firearm.death","homicide.death","unintentional.poisoning")]
+  remove(map,vote,agencies,d,outs,wonder)
   gc()
   out
 }
