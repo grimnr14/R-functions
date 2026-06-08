@@ -95,6 +95,9 @@ prepSafety<-function(year=2022,geography="county"){
   cbp<-aggregate(data=cbp,ESTAB~GEO_ID+YEAR+loc,FUN="max")
   cbp<-tidyr::spread(data=cbp,key=loc,value=ESTAB,fill=0)
   cbp$GEO_ID<-substr(cbp$GEO_ID,nchar(cbp$GEO_ID)-4,nchar(cbp$GEO_ID))
+  if(geography=="county"){
+    out<-merge(out,cbp[!is.na(cbp$GEO_ID),],by.x="geoid",by.y="GEO_ID",all.x=T)
+  }
   if(geography=="zcta"){
     cbp<-merge(cbp,map,by.x="GEO_ID",by.y="fips",all.x=T)
     cbp<-aggregate(data=cbp[,!names(cbp) %in% c("GEO_ID")],.~zcta+YEAR,FUN="mean")
@@ -119,6 +122,9 @@ prepSafety<-function(year=2022,geography="county"){
   names(vote)<-c("fips","year","per.elig.voted","per.registered")
   vote<-vote[vote$year==ifelse(substr(as.character(year),4,4) %in% c("1","3","5","7","9"),year-1,year),]
   vote$fips<-str_pad(vote$fips,width=5,side="left",pad="0")
+  if(geography=="county"){
+    out<-merge(out,vote,by.x="geoid",by.y="fips",all.x=T)
+  }
   if(geography=="zcta"){
     vote<-merge(vote,map,by.x="fips",by.y="fips",all.x=T)
     vote<-vote[,!names(vote) %in% c("fips")]
@@ -147,4 +153,5 @@ prepSafety<-function(year=2022,geography="county"){
 
 
 #test<-prepSafety(year=2019,geography="zcta")
+#test<-prepSafety(year=2019,geography="county")
 #flat_map(data=test,year=2019,state="MD",geography="zcta5",geoid="geoid",var="per.registered")
