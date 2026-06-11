@@ -183,11 +183,67 @@ prepSafety<-function(year=2022,geography="county"){
     
   }
   
+  if(year<2021){
+    year<-2021
+  }
 
+  atf<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/12",substr(year,3,4),"-ffl-list.csv"),header=T)
+  atf<-atf[2:nrow(atf),c("PREMISE_STATE","PREMISE_ZIP_CODE","LICENSE_NAME")]
+  atf$PREMISE_ZIP_CODE<-substr(atf$PREMISE_ZIP_CODE,1,5)
+  atf<-atf[!duplicated(atf),]
+  atf$val<-1
+  atf<-aggregate(atf[,c("PREMISE_ZIP_CODE","PREMISE_STATE","val")],val~PREMISE_ZIP_CODE+PREMISE_STATE,FUN="sum")
+  if(geography=="county"|geography=="tract"){
+    if(year<2020){
+      map<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/zcta_tract_rel_10.txt"),header=T)
+      map<-data.frame(tract=str_pad(map$GEOID,side="left",width=11,pad="0"),zcta=str_pad(map$ZCTA5,side="left",width=5,pad="0"))
+      map$fips<-substr(map$tract,1,5)
+      map<-map[!duplicated(map),]
+      if(geography=="county"){
+        map<-map[!duplicated(map[,c("fips","zcta")]),c("fips","zcta")]
+        atf<-merge(atf,map[!is.na(map$zcta),],by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
+        atf<-atf[!is.na(atf$val),names(atf) %in% c("fips","val")]
+        atf<-aggregate(data=out,.~fips,FUN="mean")#rate is an average across intersecting areas 
+        atf$geoid<-atf$fips
+        atf<-atf[,!names(atf) %in% "fips"]
+        
+      }else{
+        map<-map[!duplicated(map[,c("zcta","tract")]),c("zcta","tract")]#rate is inherited from zcta level averages
+        atf<-merge(atf,map,by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
+        tract<-aggregate(data=atf[!is.na(atf[,"val"]),names(atf) %in% c("tract","val")],.~tract,FUN="mean")
+        tract$geoid<-tract$tract
+        atf<-tract[,!names(tract) %in% "tract"]
+        remove(tract,zcta)
+      }
+    }else{
+      map<-read.table(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_zcta520_tract20_natl.txt"),sep="|",header=T)
+      map<-data.frame(tract=str_pad(map$GEOID_TRACT_20,side="left",width=11,pad="0"),zcta=str_pad(map$GEOID_ZCTA5_20,side="left",width=5,pad="0"))
+      map$fips<-substr(map$tract,1,5)
+      map<-map[!duplicated(map),]
+      if(geography=="county"){
+        map<-map[!duplicated(map[,c("fips","zcta")]),c("fips","zcta")]
+        atf<-merge(atf,map[!is.na(map$zcta),],by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
+        atf<-atf[!is.na(atf$val),names(atf) %in% c("fips","val")]
+        atf<-aggregate(data=atf,.~fips,FUN="mean")#rate is an average across intersecting areas 
+        atf$geoid<-atf$fips
+        atf<-atf[,!names(atf) %in% "fips"]
+        
+      }else{
+        map<-map[!duplicated(map[,c("zcta","tract")]),c("zcta","tract")]#rate is inherited from zcta level averages
+        atf<-merge(atf,map,by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
+        tract<-aggregate(data=atf[!is.na(atf[,"val"]),names(atf) %in% c("tract","val")],.~tract,FUN="mean")
+        tract$geoid<-tract$tract
+        atf<-tract[,!names(tract) %in% "tract"]
+        remove(tract,zcta)
+      }
+    }
+  }
+  names(atf)<-c("dealer","geoid")
+  out<-merge(out,atf,by="geoid",all.x=T)
   
   out<-out[!duplicated(out),]
-  out<-out[,c("geoid","robbery","assault","homicide","sexoffense","violent","advocacy_civic_service_org","ambulance","bar_cafe_restaurant","business_labor_political_org","hospitals","liquor_store","mental_health_prov","park_museum_historical","religious_org","social_assist","per.elig.voted","per.registered","firearm.death","homicide.death","unintentional.poisoning")]
-  remove(map,vote,agencies,d,outs,wonder)
+  out<-out[,c("geoid","robbery","assault","homicide","sexoffense","violent","advocacy_civic_service_org","ambulance","bar_cafe_restaurant","business_labor_political_org","hospitals","liquor_store","mental_health_prov","park_museum_historical","religious_org","social_assist","per.elig.voted","per.registered","firearm.death","homicide.death","unintentional.poisoning","dealer")]
+  remove(map,vote,agencies,d,outs,wonder,atf)
   gc()
   out
 }
