@@ -235,6 +235,8 @@ prepSafety<-function(year=2022,geography="county"){
         remove(tract,zcta)
       }
     }
+  }else{
+    atf$geoid<-atf$PREMISE_ZIP_CODE
   }
   names(atf)<-c("dealer","geoid")
   out<-merge(out,atf,by="geoid",all.x=T)
