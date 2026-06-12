@@ -18,24 +18,24 @@ prepSafety<-function(year=2022,geography="county"){
   #attach the correct geographies
   if(geography=="zcta"|geography=="tract"){
     if(year<2020){
-      map<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/zcta_tract_rel_10.txt"),header=T)
-      map<-data.frame(tract=str_pad(map$GEOID,side="left",width=11,pad="0"),zcta=str_pad(map$ZCTA5,side="left",width=5,pad="0"))
-      map$fips<-substr(map$tract,1,5)
-      map<-map[!duplicated(map),]
+      map2<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/zcta_tract_rel_10.txt"),header=T)
+      map2<-data.frame(tract=str_pad(map2$GEOID,side="left",width=11,pad="0"),zcta=str_pad(map2$ZCTA5,side="left",width=5,pad="0"))
+      map2$fips<-substr(map2$tract,1,5)
+      map2<-map2[!duplicated(map2),]
       if(geography=="zcta"){
-        map<-map[!duplicated(map[,c("fips","zcta")]),c("fips","zcta")]
-        counties<-merge(counties,map,by="fips",all.x=T)
+        map2<-map2[!duplicated(map2[,c("fips","zcta")]),c("fips","zcta")]
+        counties<-merge(counties,map2,by="fips",all.x=T)
         out<-counties[,!names(counties) %in% c("STATENAME","B01001_001","service.counties","agencies","fips","counties")]
         out<-aggregate(data=out,.~year+zcta,FUN="mean")#rate is an average across intersecting areas 
         out$geoid<-out$zcta
         out<-out[,!names(out) %in% "zcta"]
         
       }else{
-        zcta<-map[!duplicated(map[,c("fips","zcta")]),c("fips","zcta")]
+        zcta<-map2[!duplicated(map2[,c("fips","zcta")]),c("fips","zcta")]
         counties<-merge(counties,zcta,by="fips",all.y=T)
         zcta<-counties[,!names(counties) %in% c("STATENAME","B01001_001","service.counties","agencies","fips","counties")]
         zcta<-aggregate(data=zcta,.~year+zcta,FUN="max")
-        tract<-map[!duplicated(map[,c("zcta","tract")]),c("zcta","tract")]#rate is inherited from zcta level averages
+        tract<-map2[!duplicated(map2[,c("zcta","tract")]),c("zcta","tract")]#rate is inherited from zcta level averages
         zcta<-merge(zcta,tract,by="zcta",all.y=T)
         tract<-aggregate(data=zcta[!is.na(zcta$`X09A`),!names(zcta) %in% "zcta"],.~year+tract,FUN="mean")
         tract$geoid<-tract$tract
@@ -43,23 +43,23 @@ prepSafety<-function(year=2022,geography="county"){
         remove(tract,zcta)
       }
     }else{
-      map<-read.table(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_zcta520_tract20_natl.txt"),sep="|",header=T)
-      map<-data.frame(tract=str_pad(map$GEOID_TRACT_20,side="left",width=11,pad="0"),zcta=str_pad(map$GEOID_ZCTA5_20,side="left",width=5,pad="0"))
-      map$fips<-substr(map$tract,1,5)
-      map<-map[!duplicated(map),]
+      map2<-read.table(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_zcta520_tract20_natl.txt"),sep="|",header=T)
+      map2<-data.frame(tract=str_pad(map2$GEOID_TRACT_20,side="left",width=11,pad="0"),zcta=str_pad(map2$GEOID_ZCTA5_20,side="left",width=5,pad="0"))
+      map2$fips<-substr(map2$tract,1,5)
+      map2<-map2[!duplicated(map2),]
       if(geography=="zcta"){
-        map<-map[!duplicated(map[,c("fips","zcta")]),c("fips","zcta")]
-        counties<-merge(counties,map,by="fips",all.x=T)
+        map2<-map2[!duplicated(map2[,c("fips","zcta")]),c("fips","zcta")]
+        counties<-merge(counties,map2,by="fips",all.x=T)
         out<-counties[,!names(counties) %in% c("STATENAME","B01001_001","service.counties","agencies","fips","counties")]
         out<-aggregate(data=out,.~year+zcta,FUN="mean")#rate is an average across intersecting areas 
         out$geoid<-out$zcta
         out<-out[,!names(out) %in% "zcta"]
       }else{
-        zcta<-map[!duplicated(map[,c("fips","zcta")]),c("fips","zcta")]
+        zcta<-map2[!duplicated(map2[,c("fips","zcta")]),c("fips","zcta")]
         counties<-merge(counties,zcta,by="fips",all.y=T)
         zcta<-counties[,!names(counties) %in% c("STATENAME","B01001_001","service.counties","agencies","fips","counties")]
         zcta<-aggregate(data=zcta,.~year+zcta,FUN="max")
-        tract<-map[!duplicated(map[,c("zcta","tract")]),c("zcta","tract")]#rate is inherited from zcta level averages
+        tract<-map2[!duplicated(map2[,c("zcta","tract")]),c("zcta","tract")]#rate is inherited from zcta level averages
         zcta<-merge(zcta,tract,by="zcta",all.y=T)
         tract<-aggregate(data=zcta[!is.na(zcta$X09A),!names(zcta) %in% "zcta"],.~year+tract,FUN="mean")
         tract$geoid<-tract$tract
@@ -99,14 +99,14 @@ prepSafety<-function(year=2022,geography="county"){
     out<-merge(out,cbp[!is.na(cbp$GEO_ID),],by.x="geoid",by.y="GEO_ID",all.x=T)
   }
   if(geography=="zcta"){
-    cbp<-merge(cbp,map,by.x="GEO_ID",by.y="fips",all.x=T)
+    cbp<-merge(cbp,map2,by.x="GEO_ID",by.y="fips",all.x=T)
     cbp<-aggregate(data=cbp[,!names(cbp) %in% c("GEO_ID")],.~zcta+YEAR,FUN="mean")
     out<-merge(out,cbp[!is.na(cbp$zcta),],by.x="geoid",by.y="zcta",all=T)
   }
   if(geography=="tract"){
-    map<-map[,c("tract","fips")]
-    map<-map[!duplicated(map),]
-    cbp<-merge(cbp,map,by.x="GEO_ID",by.y="fips",all.x=T)
+    map2<-map2[,c("tract","fips")]
+    map2<-map2[!duplicated(map2),]
+    cbp<-merge(cbp,map2,by.x="GEO_ID",by.y="fips",all.x=T)
     cbp<-aggregate(data=cbp[,!names(cbp) %in% c("GEO_ID")],.~tract+YEAR,FUN="mean")
     out<-merge(out,cbp[!is.na(cbp$tract),],by.x="geoid",by.y="tract",all=T)
   }
@@ -126,7 +126,7 @@ prepSafety<-function(year=2022,geography="county"){
     out<-merge(out,vote,by.x="geoid",by.y="fips",all.x=T)
   }
   if(geography=="zcta"){
-    vote<-merge(vote,map,by.x="fips",by.y="fips",all.x=T)
+    vote<-merge(vote,map2,by.x="fips",by.y="fips",all.x=T)
     vote<-vote[,!names(vote) %in% c("fips")]
     vote<-vote[!duplicated(vote),]
     vote<-aggregate(data=vote,.~zcta+year,FUN="mean")
@@ -135,7 +135,7 @@ prepSafety<-function(year=2022,geography="county"){
     
   }
   if(geography=="tract"){
-    vote<-merge(vote,map,by.x="fips",by.y="fips",all.x=T)
+    vote<-merge(vote,map2,by.x="fips",by.y="fips",all.x=T)
     vote<-vote[,!names(vote) %in% c("fips")]
     vote<-vote[!duplicated(vote),]
     vote<-aggregate(data=vote,.~tract+year,FUN="mean")
@@ -165,19 +165,19 @@ prepSafety<-function(year=2022,geography="county"){
     out<-merge(out,wonder,by.x="geoid",by.y="County.Code",all.x=T)
   }
   if(geography=="zcta"){
-    wonder<-merge(wonder,map,by.x="County.Code",by.y="fips",all.x=T)
+    wonder<-merge(wonder,map2,by.x="County.Code",by.y="fips",all.x=T)
     wonder<-wonder[,!names(wonder) %in% c("fips")]
     wonder<-wonder[!duplicated(wonder),]
-    wonder<-aggregate(data=wonder,.~zcta+year,FUN="mean")
+    wonder<-aggregate(data=wonder,.~zcta,FUN="mean")
     #now merge pieces----
     out<-merge(out,wonder,by.x="geoid",by.y="zcta",all=T)
     
   }
   if(geography=="tract"){
-    wonder<-merge(wonder,map,by.x="County.Code",by.y="fips",all.x=T)
+    wonder<-merge(wonder,map2,by.x="County.Code",by.y="fips",all.x=T)
     wonder<-wonder[,!names(wonder) %in% c("fips")]
     wonder<-wonder[!duplicated(wonder),]
-    wonder<-aggregate(data=wonder,.~tract+year,FUN="mean")
+    wonder<-aggregate(data=wonder,.~tract,FUN="mean")
     #now merge pieces----
     out<-merge(out,wonder,by.x="geoid",by.y="tract",all=T)
     
@@ -195,42 +195,42 @@ prepSafety<-function(year=2022,geography="county"){
   atf<-aggregate(atf[,c("PREMISE_ZIP_CODE","PREMISE_STATE","val")],val~PREMISE_ZIP_CODE+PREMISE_STATE,FUN="sum")
   if(geography=="county"|geography=="tract"){
     if(year<2020){
-      map<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/zcta_tract_rel_10.txt"),header=T)
-      map<-data.frame(tract=str_pad(map$GEOID,side="left",width=11,pad="0"),zcta=str_pad(map$ZCTA5,side="left",width=5,pad="0"))
-      map$fips<-substr(map$tract,1,5)
-      map<-map[!duplicated(map),]
+      map2<-read.csv(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/zcta_tract_rel_10.txt"),header=T)
+      map2<-data.frame(tract=str_pad(map2$GEOID,side="left",width=11,pad="0"),zcta=str_pad(map2$ZCTA5,side="left",width=5,pad="0"))
+      map2$fips<-substr(map2$tract,1,5)
+      map2<-map2[!duplicated(map2),]
       if(geography=="county"){
-        map<-map[!duplicated(map[,c("fips","zcta")]),c("fips","zcta")]
-        atf<-merge(atf,map[!is.na(map$zcta),],by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
+        map2<-map2[!duplicated(map2[,c("fips","zcta")]),c("fips","zcta")]
+        atf<-merge(atf,map2[!is.na(map2$zcta),],by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
         atf<-atf[!is.na(atf$val),names(atf) %in% c("fips","val")]
         atf<-aggregate(data=out,.~fips,FUN="mean")#rate is an average across intersecting areas 
         atf$geoid<-atf$fips
         atf<-atf[,!names(atf) %in% "fips"]
         
       }else{
-        map<-map[!duplicated(map[,c("zcta","tract")]),c("zcta","tract")]#rate is inherited from zcta level averages
-        atf<-merge(atf,map,by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
+        map2<-map2[!duplicated(map2[,c("zcta","tract")]),c("zcta","tract")]#rate is inherited from zcta level averages
+        atf<-merge(atf,map2,by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
         tract<-aggregate(data=atf[!is.na(atf[,"val"]),names(atf) %in% c("tract","val")],.~tract,FUN="mean")
         tract$geoid<-tract$tract
         atf<-tract[,!names(tract) %in% "tract"]
         remove(tract,zcta)
       }
     }else{
-      map<-read.table(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_zcta520_tract20_natl.txt"),sep="|",header=T)
-      map<-data.frame(tract=str_pad(map$GEOID_TRACT_20,side="left",width=11,pad="0"),zcta=str_pad(map$GEOID_ZCTA5_20,side="left",width=5,pad="0"))
-      map$fips<-substr(map$tract,1,5)
-      map<-map[!duplicated(map),]
+      map2<-read.table(paste0("https://raw.githubusercontent.com/grimnr14/geohealthdb/refs/heads/main/tab20_zcta520_tract20_natl.txt"),sep="|",header=T)
+      map2<-data.frame(tract=str_pad(map2$GEOID_TRACT_20,side="left",width=11,pad="0"),zcta=str_pad(map2$GEOID_ZCTA5_20,side="left",width=5,pad="0"))
+      map2$fips<-substr(map2$tract,1,5)
+      map2<-map2[!duplicated(map2),]
       if(geography=="county"){
-        map<-map[!duplicated(map[,c("fips","zcta")]),c("fips","zcta")]
-        atf<-merge(atf,map[!is.na(map$zcta),],by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
+        map2<-map2[!duplicated(map2[,c("fips","zcta")]),c("fips","zcta")]
+        atf<-merge(atf,map2[!is.na(map2$zcta),],by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
         atf<-atf[!is.na(atf$val),names(atf) %in% c("fips","val")]
         atf<-aggregate(data=atf,.~fips,FUN="mean")#rate is an average across intersecting areas 
         atf$geoid<-atf$fips
         atf<-atf[,!names(atf) %in% "fips"]
         
       }else{
-        map<-map[!duplicated(map[,c("zcta","tract")]),c("zcta","tract")]#rate is inherited from zcta level averages
-        atf<-merge(atf,map,by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
+        map2<-map2[!duplicated(map2[,c("zcta","tract")]),c("zcta","tract")]#rate is inherited from zcta level averages
+        atf<-merge(atf,map2,by.x="PREMISE_ZIP_CODE",by.y="zcta",all.x=T)
         tract<-aggregate(data=atf[!is.na(atf[,"val"]),names(atf) %in% c("tract","val")],.~tract,FUN="mean")
         tract$geoid<-tract$tract
         atf<-tract[,!names(tract) %in% "tract"]
@@ -243,7 +243,7 @@ prepSafety<-function(year=2022,geography="county"){
   
   out<-out[!duplicated(out),]
   out<-out[,c("geoid","robbery","assault","homicide","sexoffense","violent","advocacy_civic_service_org","ambulance","bar_cafe_restaurant","business_labor_political_org","hospitals","liquor_store","mental_health_prov","park_museum_historical","religious_org","social_assist","per.elig.voted","per.registered","firearm.death","homicide.death","unintentional.poisoning","dealer")]
-  remove(map,vote,agencies,d,outs,wonder,atf)
+  remove(map2,vote,agencies,d,outs,wonder,atf)
   gc()
   out
 }
@@ -251,4 +251,4 @@ prepSafety<-function(year=2022,geography="county"){
 
 #test<-prepSafety(year=2019,geography="zcta")
 #test<-prepSafety(year=2019,geography="county")
-#flat_map(data=test,year=2019,state="MD",geography="zcta5",geoid="geoid",var="per.registered")
+#flat_map2(data=test,year=2019,state="MD",geography="zcta5",geoid="geoid",var="per.registered")
