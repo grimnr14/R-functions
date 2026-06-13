@@ -255,5 +255,5 @@ prepSafety<-function(year=2022,geography="county"){
 
 #test<-prepSafety(year=2019,geography="zcta")
 #test<-prepSafety(year=2019,geography="county")
-test<-prepSafety(year=2019,geography="tract")
+#test<-prepSafety(year=2019,geography="tract")
 #flat_map2(data=test,year=2019,state="MD",geography="zcta5",geoid="geoid",var="per.registered")
