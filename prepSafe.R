@@ -72,7 +72,7 @@ prepSafety<-function(year=2022,geography="county"){
     out$geoid<-out$fips
     out<-out[,!names(out) %in% "fips"]
   }
-  remove(counties,pop)
+  remove(counties)
   gc()
   
   
@@ -95,6 +95,8 @@ prepSafety<-function(year=2022,geography="county"){
   cbp<-aggregate(data=cbp,ESTAB~GEO_ID+YEAR+loc,FUN="max")
   cbp<-tidyr::spread(data=cbp,key=loc,value=ESTAB,fill=0)
   cbp$GEO_ID<-substr(cbp$GEO_ID,nchar(cbp$GEO_ID)-4,nchar(cbp$GEO_ID))
+  cbp<-merge(cbp,pop[,c("GEOID","year","B01001_001")],by.x=c("GEO_ID","YEAR"),by.y=c("GEOID","year"),all.x=T)
+  cbp[3:(ncol(cbp)-1)]<-cbp[3:(ncol(cbp)-1)]/cbp$B01001_001
   if(geography=="county"){
     out<-merge(out,cbp[!is.na(cbp$GEO_ID),],by.x="geoid",by.y="GEO_ID",all.x=T)
   }
